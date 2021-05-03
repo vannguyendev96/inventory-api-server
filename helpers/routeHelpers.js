@@ -23,6 +23,7 @@ module.exports = {
             name: Joi.string(),
             emailUser: Joi.string(),
             sdt: Joi.string(),
+            kholamviec: Joi.string(),
         })
     }
 

@@ -38,6 +38,12 @@ const userSchema = new Schema({
         require: true,
         lowercase: true
     },
+
+    kholamviec: {
+        type: String,
+        require: true,
+        lowercase: true
+    },
    
 })
 
