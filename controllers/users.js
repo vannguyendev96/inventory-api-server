@@ -102,4 +102,28 @@ module.exports = {
         }
     },
 
+
+    editUser: async (req, res, next) => {
+        try {
+            const { email, roll, name, emailUser, sdt, kholamviec } = req.body;
+            const foundUser = await User.findOne({ email });
+            if (!foundUser) {
+                res.status(403).json({ message: "Username is not in data" });
+            }
+            else{
+                User.findOneAndUpdate({ _id: foundUser._id },{$set:{roll:roll,name:name,emailUser: emailUser,sdt:sdt,kholamviec:kholamviec}}, function (err, docs) {
+                    if (err){
+                        res.status(404).json({ message: "update user error" });
+                    }
+                    else{
+                        res.status(200).json({ message: "update user success" });
+                    }
+                });
+            }
+        } catch (error) {
+            console.log(error);
+            res.status(400).json({ message: "update info user error" });
+        }
+    },
+
 }
