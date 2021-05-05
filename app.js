@@ -65,7 +65,7 @@ app.use('/', indexRouter);
 //app.use('/users', usersRouter);
 app.use('/users', require('./routes/users'));
 app.use('/drivers', require('./routes/drivers'));
-
+app.use('/warehouses', require('./routes/warehouse'));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

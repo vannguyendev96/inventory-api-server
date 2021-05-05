@@ -111,7 +111,14 @@ module.exports = {
                 res.status(403).json({ message: "Username is not in data" });
             }
             else{
-                User.findOneAndUpdate({ _id: foundUser._id },{$set:{roll:roll,name:name,emailUser: emailUser,sdt:sdt,kholamviec:kholamviec}}, function (err, docs) {
+                const rollUpdate = (roll !== '' && roll !== undefined) ? roll : foundUser.roll;
+                const nameUpdate = (name !== '' && name !== undefined) ? name : foundUser.name;
+                const emailUserUpdate = (emailUser !== '' && emailUser !== undefined) ? emailUser : foundUser.emailUser;
+                const sdtUpdate = (sdt !== '' && sdt !== undefined) ? sdt : foundUser.sdt;
+                const kholamviecUpdate = (kholamviec !== '' && kholamviec !== undefined) ? kholamviec : foundUser.kholamviec;
+
+                User.findOneAndUpdate({ _id: foundUser._id },{$set:{roll:rollUpdate,name:nameUpdate,emailUser: emailUserUpdate,
+                    sdt:sdtUpdate,kholamviec:kholamviecUpdate}}, function (err, docs) {
                     if (err){
                         res.status(404).json({ message: "update user error" });
                     }
