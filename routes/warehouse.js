@@ -17,4 +17,7 @@ router.route('/delete-warehouse')
 router.route('/update-warehouse')
     .post(passportJWT, WarehouseController.editWarehouse);
 
+router.route('/getbyid-warehouse')
+    .post(passportJWT, WarehouseController.getByIDWarehouse);
+
 module.exports = router;

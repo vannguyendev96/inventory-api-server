@@ -87,4 +87,24 @@ module.exports = {
             res.status(400).json({ message: "update info Warehouse error" });
         }
     },
+
+    getByIDWarehouse: async (req, res, next) => {
+        try {
+            const { tenkhohang } = req.body;
+            const foundWarehouse = await Warehouse.findOne({ tenkhohang });
+            if (!foundWarehouse) {
+                res.status(403).json({ message: "Warehouse is not in data" });
+            }
+            else{
+                res.json({
+                    result: 'ok',
+                    data: foundWarehouse,
+                    message: 'get warehouse successfully'
+                })
+            }
+        } catch (error) {
+            console.log(error);
+            res.status(400).json({ message: "get info user error" });
+        }
+    },
 }

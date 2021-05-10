@@ -133,4 +133,23 @@ module.exports = {
         }
     },
 
+    getbyUser: async (req, res, next) => {
+        try {
+            const { email } = req.body;
+            const foundUser = await User.findOne({ email });
+            if (!foundUser) {
+                res.status(403).json({ message: "Username is not in data" });
+            }
+            else{
+                res.json({
+                    result: 'ok',
+                    data: foundUser,
+                    message: 'get User successfully'
+                })
+            }
+        } catch (error) {
+            console.log(error);
+            res.status(400).json({ message: "get info user error" });
+        }
+    },
 }

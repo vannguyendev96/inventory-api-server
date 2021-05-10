@@ -29,4 +29,7 @@ router.route('/delete-user')
 router.route('/update-user')
   .post(passportJWT, UsersController.editUser);
 
+router.route('/getby-user')
+  .post(passportJWT, UsersController.getbyUser);
+
 module.exports = router;
