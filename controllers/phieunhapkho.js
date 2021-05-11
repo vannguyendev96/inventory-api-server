@@ -145,7 +145,19 @@ module.exports = {
                 })
             }
             else if(queryString === "khochuakienhang"){
-
+                let listMaLoHang = [];
+                PhieuNhapKhoChiTiet.find({khochuakienhang: dataQuery}).then((pnkchitiet) => {
+                    pnkchitiet.forEach(element => {
+                        listMaLoHang.push(element.malohang)
+                    });
+                    PhieuNhapKho.find({ malohang: listMaLoHang }).then((pnkchitiet) => {
+                        res.json({
+                            result: 'ok',
+                            data: pnkchitiet,
+                            message: 'get PNK successfully'
+                        })
+                    })
+                })
             }
             
         } catch (error) {

@@ -114,4 +114,57 @@ module.exports = {
         }
     },
 
+    searchPNK: async (req, res, next) => {
+        const { queryString, dataQuery } = req.body;
+        try {
+            if(queryString === "nguoitaolohang"){
+                PhieuXuatKho.find({nguoitaolohang: dataQuery}).then((pnkchitiet) => {
+                    res.json({
+                        result: 'ok',
+                        data: pnkchitiet,
+                        message: 'get PNK successfully'
+                    })
+                })
+            }
+            else if(queryString === "malohang"){
+                PhieuXuatKho.find({malohang: dataQuery}).then((pnkchitiet) => {
+                    res.json({
+                        result: 'ok',
+                        data: pnkchitiet,
+                        message: 'get PNK successfully'
+                    })
+                })
+            }
+            else if(queryString === "ngaytaolohang"){
+                
+                PhieuXuatKho.find({ ngaytaolohang: { $gte: dataQuery.date_from, $lte: dataQuery.date_to}}).sort([['time', -1]]).then((pnkchitiet) => {
+                    res.json({
+                        result: 'ok',
+                        data: pnkchitiet,
+                        message: 'get PNK successfully'
+                    })
+                })
+            }
+            else if(queryString === "khochuakienhang"){
+                let listMaLoHang = [];
+                PhieuXuatKhoChiTiet.find({khochuakienhang: dataQuery}).then((pnkchitiet) => {
+                    pnkchitiet.forEach(element => {
+                        listMaLoHang.push(element.malohang)
+                    });
+                    PhieuXuatKho.find({ malohang: listMaLoHang }).then((pnkchitiet) => {
+                        res.json({
+                            result: 'ok',
+                            data: pnkchitiet,
+                            message: 'get PNK successfully'
+                        })
+                    })
+                })
+            }
+            
+        } catch (error) {
+            console.log(error);
+            res.status(400).json({ message: "get PNK error" });
+        }
+    },
+
 }
