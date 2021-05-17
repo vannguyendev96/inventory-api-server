@@ -1,4 +1,5 @@
 const PhieuXuatKho = require('../models/phieuxuatkho');
+const PhieuNhapKho = require('../models/phieunhapkho');
 const PhieuXuatKhoChiTiet = require('../models/phieuxuatkhochitiet');
 
 module.exports = {
@@ -167,4 +168,28 @@ module.exports = {
         }
     },
 
+    report: async (req, res, next) => {
+       
+        try {
+            PhieuXuatKho.find().then((pxk) => {
+                const lengthPXK = pxk.length;
+                PhieuNhapKho.find().then((pnk) => {
+                    const lengthPNK = pnk.length;
+                    const total = lengthPXK + lengthPNK;
+
+                    const percentPNK = lengthPNK/total*100;
+                    const percentPXK = lengthPXK/total*100;
+                    res.json({
+                        result: 'ok',
+                        percentPNK: percentPNK,
+                        percentPXK: percentPXK,
+                        message: 'get report successfully'
+                    })
+                })
+            })
+        } catch (error) {
+            console.log(error);
+            res.status(400).json({ message: "get report error" });
+        }
+    },
 }

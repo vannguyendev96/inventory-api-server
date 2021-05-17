@@ -17,4 +17,7 @@ router.route('/getbymalohang-pxkdetail')
 router.route('/search-pxk')
     .post(passportJWT, PhieuXuatKhoController.searchPNK);
 
+router.route('/report')
+    .get(passportJWT, PhieuXuatKhoController.report);
+
 module.exports = router;
