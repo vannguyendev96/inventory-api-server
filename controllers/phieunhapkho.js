@@ -4,14 +4,17 @@ const PhieuNhapKhoChiTiet = require('../models/phieunhapkhochitiet');
 module.exports = {
     createPNK: async (req, res, next) => {
         try {
-            const { data } = req.body;
+            const { data, driver } = req.body;
 
             let today = new Date();
             let created = (today.getMonth() + 1) + '-' + (today.getDate()) + '-' + today.getFullYear();
 
             PhieuNhapKho.find().then(async (check) => {
                 if (check.length === 0) {
-                    const newPNK = PhieuNhapKho({ malohang: "1000", nguoitaolohang: data[0].nguoitaolohang, ngaytaolohang: created });
+                    const newPNK = PhieuNhapKho({
+                        malohang: "1000", nguoitaolohang: data[0].nguoitaolohang, ngaytaolohang: created,
+                        taixevanchuyen: driver
+                    });
                     await newPNK
                         .save()
                         .then(async (doc) => {
@@ -39,7 +42,10 @@ module.exports = {
                             res.status(403).json({ message: "ID PNK is a already in use" });
                         }
                         else {
-                            const newPNK = PhieuNhapKho({ malohang: malohangCheck, nguoitaolohang: data[0].nguoitaolohang, ngaytaolohang: created });
+                            const newPNK = PhieuNhapKho({
+                                malohang: malohangCheck, nguoitaolohang: data[0].nguoitaolohang, ngaytaolohang: created,
+                                taixevanchuyen: driver
+                            });
                             await newPNK
                                 .save()
                                 .then(async (doc) => {
@@ -71,7 +77,7 @@ module.exports = {
     getListPNK: async (req, res, next) => {
         const { nguoitaolohang } = req.body;
         try {
-            if(nguoitaolohang === ''){
+            if (nguoitaolohang === '') {
                 PhieuNhapKho.find().then((pnk) => {
                     res.json({
                         result: 'ok',
@@ -81,8 +87,8 @@ module.exports = {
                     })
                 })
             }
-            else{
-                PhieuNhapKho.find({nguoitaolohang}).then((pnk) => {
+            else {
+                PhieuNhapKho.find({ nguoitaolohang }).then((pnk) => {
                     res.json({
                         result: 'ok',
                         data: pnk,
@@ -100,7 +106,7 @@ module.exports = {
     getPNKChiTiet: async (req, res, next) => {
         const { malohang } = req.body;
         try {
-            PhieuNhapKhoChiTiet.find({malohang}).then((pnkchitiet) => {
+            PhieuNhapKhoChiTiet.find({ malohang }).then((pnkchitiet) => {
                 res.json({
                     result: 'ok',
                     data: pnkchitiet,
@@ -116,8 +122,8 @@ module.exports = {
     searchPNK: async (req, res, next) => {
         const { queryString, dataQuery } = req.body;
         try {
-            if(queryString === "nguoitaolohang"){
-                PhieuNhapKho.find({nguoitaolohang: dataQuery}).then((pnkchitiet) => {
+            if (queryString === "nguoitaolohang") {
+                PhieuNhapKho.find({ nguoitaolohang: dataQuery }).then((pnkchitiet) => {
                     res.json({
                         result: 'ok',
                         data: pnkchitiet,
@@ -125,8 +131,8 @@ module.exports = {
                     })
                 })
             }
-            else if(queryString === "malohang"){
-                PhieuNhapKho.find({malohang: dataQuery}).then((pnkchitiet) => {
+            else if (queryString === "malohang") {
+                PhieuNhapKho.find({ malohang: dataQuery }).then((pnkchitiet) => {
                     res.json({
                         result: 'ok',
                         data: pnkchitiet,
@@ -134,9 +140,9 @@ module.exports = {
                     })
                 })
             }
-            else if(queryString === "ngaytaolohang"){
-                
-                PhieuNhapKho.find({ ngaytaolohang: { $gte: dataQuery.date_from, $lte: dataQuery.date_to}}).sort([['time', -1]]).then((pnkchitiet) => {
+            else if (queryString === "ngaytaolohang") {
+
+                PhieuNhapKho.find({ ngaytaolohang: { $gte: dataQuery.date_from, $lte: dataQuery.date_to } }).sort([['time', -1]]).then((pnkchitiet) => {
                     res.json({
                         result: 'ok',
                         data: pnkchitiet,
@@ -144,9 +150,9 @@ module.exports = {
                     })
                 })
             }
-            else if(queryString === "khochuakienhang"){
+            else if (queryString === "khochuakienhang") {
                 let listMaLoHang = [];
-                PhieuNhapKhoChiTiet.find({khochuakienhang: dataQuery}).then((pnkchitiet) => {
+                PhieuNhapKhoChiTiet.find({ khochuakienhang: dataQuery }).then((pnkchitiet) => {
                     pnkchitiet.forEach(element => {
                         listMaLoHang.push(element.malohang)
                     });
@@ -159,7 +165,7 @@ module.exports = {
                     })
                 })
             }
-            
+
         } catch (error) {
             console.log(error);
             res.status(400).json({ message: "get PNK error" });

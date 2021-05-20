@@ -5,14 +5,17 @@ const PhieuXuatKhoChiTiet = require('../models/phieuxuatkhochitiet');
 module.exports = {
     createPNK: async (req, res, next) => {
         try {
-            const { data, lydoxuatkho, sotienthanhtoan, phuongthucthanhtoan } = req.body;
+            const { data, lydoxuatkho, sotienthanhtoan, phuongthucthanhtoan, taixevanchuyen } = req.body;
 
             let today = new Date();
             let created = (today.getMonth() + 1) + '-' + (today.getDate()) + '-' + today.getFullYear();
 
             PhieuXuatKho.find().then(async (check) => {
                 if (check.length === 0) {
-                    const newPXK = PhieuXuatKho({ malohang: "1000", nguoitaolohang: data[0].nguoitaolohang, ngaytaolohang: created, lydoxuatkho, sotienthanhtoan, phuongthucthanhtoan });
+                    const newPXK = PhieuXuatKho({
+                        malohang: "1000", nguoitaolohang: data[0].nguoitaolohang, ngaytaolohang: created, lydoxuatkho,
+                        sotienthanhtoan, phuongthucthanhtoan, taixevanchuyen
+                    });
                     await newPXK
                         .save()
                         .then(async (doc) => {
@@ -40,7 +43,10 @@ module.exports = {
                             res.status(403).json({ message: "ID PNK is a already in use" });
                         }
                         else {
-                            const newPXK = PhieuXuatKho({ malohang: malohangCheck, nguoitaolohang: data[0].nguoitaolohang, ngaytaolohang: created,lydoxuatkho, sotienthanhtoan, phuongthucthanhtoan });
+                            const newPXK = PhieuXuatKho({
+                                malohang: malohangCheck, nguoitaolohang: data[0].nguoitaolohang,
+                                ngaytaolohang: created, lydoxuatkho, sotienthanhtoan, phuongthucthanhtoan, taixevanchuyen
+                            });
                             await newPXK
                                 .save()
                                 .then(async (doc) => {
@@ -73,7 +79,7 @@ module.exports = {
         const { nguoitaolohang } = req.body;
         console.log(nguoitaolohang)
         try {
-            if(nguoitaolohang === ''){
+            if (nguoitaolohang === '') {
                 PhieuXuatKho.find().then((pxk) => {
                     res.json({
                         result: 'ok',
@@ -83,8 +89,8 @@ module.exports = {
                     })
                 })
             }
-            else{
-                PhieuXuatKho.find({nguoitaolohang}).then((pxk) => {
+            else {
+                PhieuXuatKho.find({ nguoitaolohang }).then((pxk) => {
                     res.json({
                         result: 'ok',
                         data: pxk,
@@ -102,7 +108,7 @@ module.exports = {
     getPNKChiTiet: async (req, res, next) => {
         const { malohang } = req.body;
         try {
-            PhieuXuatKhoChiTiet.find({malohang}).then((pxkchitiet) => {
+            PhieuXuatKhoChiTiet.find({ malohang }).then((pxkchitiet) => {
                 res.json({
                     result: 'ok',
                     data: pxkchitiet,
@@ -118,8 +124,8 @@ module.exports = {
     searchPNK: async (req, res, next) => {
         const { queryString, dataQuery } = req.body;
         try {
-            if(queryString === "nguoitaolohang"){
-                PhieuXuatKho.find({nguoitaolohang: dataQuery}).then((pnkchitiet) => {
+            if (queryString === "nguoitaolohang") {
+                PhieuXuatKho.find({ nguoitaolohang: dataQuery }).then((pnkchitiet) => {
                     res.json({
                         result: 'ok',
                         data: pnkchitiet,
@@ -127,8 +133,8 @@ module.exports = {
                     })
                 })
             }
-            else if(queryString === "malohang"){
-                PhieuXuatKho.find({malohang: dataQuery}).then((pnkchitiet) => {
+            else if (queryString === "malohang") {
+                PhieuXuatKho.find({ malohang: dataQuery }).then((pnkchitiet) => {
                     res.json({
                         result: 'ok',
                         data: pnkchitiet,
@@ -136,9 +142,9 @@ module.exports = {
                     })
                 })
             }
-            else if(queryString === "ngaytaolohang"){
-                
-                PhieuXuatKho.find({ ngaytaolohang: { $gte: dataQuery.date_from, $lte: dataQuery.date_to}}).sort([['time', -1]]).then((pnkchitiet) => {
+            else if (queryString === "ngaytaolohang") {
+
+                PhieuXuatKho.find({ ngaytaolohang: { $gte: dataQuery.date_from, $lte: dataQuery.date_to } }).sort([['time', -1]]).then((pnkchitiet) => {
                     res.json({
                         result: 'ok',
                         data: pnkchitiet,
@@ -146,9 +152,9 @@ module.exports = {
                     })
                 })
             }
-            else if(queryString === "khochuakienhang"){
+            else if (queryString === "khochuakienhang") {
                 let listMaLoHang = [];
-                PhieuXuatKhoChiTiet.find({khochuakienhang: dataQuery}).then((pnkchitiet) => {
+                PhieuXuatKhoChiTiet.find({ khochuakienhang: dataQuery }).then((pnkchitiet) => {
                     pnkchitiet.forEach(element => {
                         listMaLoHang.push(element.malohang)
                     });
@@ -161,7 +167,7 @@ module.exports = {
                     })
                 })
             }
-            
+
         } catch (error) {
             console.log(error);
             res.status(400).json({ message: "get PNK error" });
@@ -169,7 +175,7 @@ module.exports = {
     },
 
     report: async (req, res, next) => {
-       
+
         try {
             PhieuXuatKho.find().then((pxk) => {
                 const lengthPXK = pxk.length;
@@ -177,8 +183,8 @@ module.exports = {
                     const lengthPNK = pnk.length;
                     const total = lengthPXK + lengthPNK;
 
-                    const percentPNK = lengthPNK/total*100;
-                    const percentPXK = lengthPXK/total*100;
+                    const percentPNK = lengthPNK / total * 100;
+                    const percentPXK = lengthPXK / total * 100;
                     res.json({
                         result: 'ok',
                         percentPNK: percentPNK,

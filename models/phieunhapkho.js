@@ -17,6 +17,10 @@ const phieunhapkhoSchema = new Schema({
         type: Date,
         require: true
     },
+    taixevanchuyen: {
+        type: String,
+        require: true
+    },
 })
 
 

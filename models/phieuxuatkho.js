@@ -29,6 +29,10 @@ const phieuxuatkhoSchema = new Schema({
         type: String,
         require: true
     },
+    taixevanchuyen: {
+        type: String,
+        require: true
+    },
 })
 
 
