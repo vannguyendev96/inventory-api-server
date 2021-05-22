@@ -14,7 +14,7 @@ module.exports = {
                 if (check.length === 0) {
                     const newPXK = PhieuXuatKho({
                         malohang: "1000", nguoitaolohang: data[0].nguoitaolohang, ngaytaolohang: created, lydoxuatkho,
-                        sotienthanhtoan, phuongthucthanhtoan, taixevanchuyen
+                        sotienthanhtoan: new Intl.NumberFormat().format(sotienthanhtoan) , phuongthucthanhtoan, taixevanchuyen
                     });
                     await newPXK
                         .save()
@@ -24,7 +24,8 @@ module.exports = {
                                     malohang: "1000", nguoitaolohang: dataPXK.nguoitaolohang, tenkienhang: dataPXK.tenkienhang, soluongkienhang: dataPXK.soluongkienhang, trangthai: dataPXK.trangthai,
                                     loaikienhang: dataPXK.loaikienhang, khochuakienhang: dataPXK.khochuakienhang, diachikhochua: dataPXK.diachikhochua,
                                     tennguoinhan: dataPXK.tennguoinhan, sdtnguoinhan: dataPXK.sdtnguoinhan, diachinguoinhan: dataPXK.diachinguoinhan,
-                                    tennguoigui: dataPXK.tennguoigui, sdtnguoigui: dataPXK.sdtnguoigui, diachinguoigui: dataPXK.diachinguoigui
+                                    tennguoigui: dataPXK.tennguoigui, sdtnguoigui: dataPXK.sdtnguoigui, diachinguoigui: dataPXK.diachinguoigui,
+                                    dongia: dataPXK.dongia
                                 });
                                 await newPXKDetail.save();
                             });
@@ -45,7 +46,8 @@ module.exports = {
                         else {
                             const newPXK = PhieuXuatKho({
                                 malohang: malohangCheck, nguoitaolohang: data[0].nguoitaolohang,
-                                ngaytaolohang: created, lydoxuatkho, sotienthanhtoan, phuongthucthanhtoan, taixevanchuyen
+                                ngaytaolohang: created, lydoxuatkho, 
+                                sotienthanhtoan: new Intl.NumberFormat().format(sotienthanhtoan), phuongthucthanhtoan, taixevanchuyen
                             });
                             await newPXK
                                 .save()
@@ -55,7 +57,8 @@ module.exports = {
                                             malohang: malohangCheck, nguoitaolohang: dataPXK.nguoitaolohang, tenkienhang: dataPXK.tenkienhang, soluongkienhang: dataPXK.soluongkienhang, trangthai: dataPXK.trangthai,
                                             loaikienhang: dataPXK.loaikienhang, khochuakienhang: dataPXK.khochuakienhang, diachikhochua: dataPXK.diachikhochua,
                                             tennguoinhan: dataPXK.tennguoinhan, sdtnguoinhan: dataPXK.sdtnguoinhan, diachinguoinhan: dataPXK.diachinguoinhan,
-                                            tennguoigui: dataPXK.tennguoigui, sdtnguoigui: dataPXK.sdtnguoigui, diachinguoigui: dataPXK.diachinguoigui
+                                            tennguoigui: dataPXK.tennguoigui, sdtnguoigui: dataPXK.sdtnguoigui, diachinguoigui: dataPXK.diachinguoigui,
+                                            dongia: dataPXK.dongia
                                         });
                                         await newPXKDetail.save();
                                     });

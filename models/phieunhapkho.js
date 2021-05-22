@@ -21,6 +21,10 @@ const phieunhapkhoSchema = new Schema({
         type: String,
         require: true
     },
+    tongtien: {
+        type: String,
+        require: true
+    },
 })
 
 

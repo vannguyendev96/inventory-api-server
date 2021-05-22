@@ -9,11 +9,19 @@ module.exports = {
             let today = new Date();
             let created = (today.getMonth() + 1) + '-' + (today.getDate()) + '-' + today.getFullYear();
 
+            let tongtienlohang = 0;
+
+            data.forEach(dataPNK => {
+                const dongiaConvert = (dataPNK.dongia).split(",").join("");
+                tongtienlohang = tongtienlohang + parseFloat(dongiaConvert,10);
+            });
+
+
             PhieuNhapKho.find().then(async (check) => {
                 if (check.length === 0) {
                     const newPNK = PhieuNhapKho({
                         malohang: "1000", nguoitaolohang: data[0].nguoitaolohang, ngaytaolohang: created,
-                        taixevanchuyen: driver
+                        taixevanchuyen: driver,tongtien: new Intl.NumberFormat().format(tongtienlohang) 
                     });
                     await newPNK
                         .save()
@@ -23,7 +31,8 @@ module.exports = {
                                     malohang: "1000", nguoitaolohang: dataPNK.nguoitaolohang, tenkienhang: dataPNK.tenkienhang, soluongkienhang: dataPNK.soluongkienhang, trangthai: dataPNK.trangthai,
                                     loaikienhang: dataPNK.loaikienhang, khochuakienhang: dataPNK.khochuakienhang, diachikhochua: dataPNK.diachikhochua,
                                     tennguoinhan: dataPNK.tennguoinhan, sdtnguoinhan: dataPNK.sdtnguoinhan, diachinguoinhan: dataPNK.diachinguoinhan,
-                                    tennguoigui: dataPNK.tennguoigui, sdtnguoigui: dataPNK.sdtnguoigui, diachinguoigui: dataPNK.diachinguoigui
+                                    tennguoigui: dataPNK.tennguoigui, sdtnguoigui: dataPNK.sdtnguoigui, diachinguoigui: dataPNK.diachinguoigui,
+                                    dongia: dataPNK.dongia
                                 });
                                 await newPNKDetail.save();
                             });
@@ -44,7 +53,7 @@ module.exports = {
                         else {
                             const newPNK = PhieuNhapKho({
                                 malohang: malohangCheck, nguoitaolohang: data[0].nguoitaolohang, ngaytaolohang: created,
-                                taixevanchuyen: driver
+                                taixevanchuyen: driver,tongtien: tongtienlohang
                             });
                             await newPNK
                                 .save()

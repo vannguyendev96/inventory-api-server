@@ -22,6 +22,11 @@ const phieuxuatkhochitietSchema = new Schema({
         require: true
     },
 
+    dongia: {
+        type: String,
+        require: true
+    },
+
     trangthai: {
         type: String,
         require: true
