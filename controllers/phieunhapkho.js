@@ -13,7 +13,7 @@ module.exports = {
 
             data.forEach(dataPNK => {
                 const dongiaConvert = (dataPNK.dongia).split(",").join("");
-                tongtienlohang = tongtienlohang + parseFloat(dongiaConvert,10);
+                tongtienlohang = tongtienlohang + parseFloat(dongiaConvert, 10);
             });
 
 
@@ -21,7 +21,7 @@ module.exports = {
                 if (check.length === 0) {
                     const newPNK = PhieuNhapKho({
                         malohang: "1000", nguoitaolohang: data[0].nguoitaolohang, ngaytaolohang: created,
-                        taixevanchuyen: driver,tongtien: new Intl.NumberFormat().format(tongtienlohang) 
+                        taixevanchuyen: driver, tongtien: new Intl.NumberFormat().format(tongtienlohang)
                     });
                     await newPNK
                         .save()
@@ -53,7 +53,7 @@ module.exports = {
                         else {
                             const newPNK = PhieuNhapKho({
                                 malohang: malohangCheck, nguoitaolohang: data[0].nguoitaolohang, ngaytaolohang: created,
-                                taixevanchuyen: driver,tongtien: tongtienlohang
+                                taixevanchuyen: driver, tongtien: new Intl.NumberFormat().format(tongtienlohang)
                             });
                             await newPNK
                                 .save()
@@ -63,7 +63,8 @@ module.exports = {
                                             malohang: malohangCheck, nguoitaolohang: dataPNK.nguoitaolohang, tenkienhang: dataPNK.tenkienhang, soluongkienhang: dataPNK.soluongkienhang, trangthai: dataPNK.trangthai,
                                             loaikienhang: dataPNK.loaikienhang, khochuakienhang: dataPNK.khochuakienhang, diachikhochua: dataPNK.diachikhochua,
                                             tennguoinhan: dataPNK.tennguoinhan, sdtnguoinhan: dataPNK.sdtnguoinhan, diachinguoinhan: dataPNK.diachinguoinhan,
-                                            tennguoigui: dataPNK.tennguoigui, sdtnguoigui: dataPNK.sdtnguoigui, diachinguoigui: dataPNK.diachinguoigui
+                                            tennguoigui: dataPNK.tennguoigui, sdtnguoigui: dataPNK.sdtnguoigui, diachinguoigui: dataPNK.diachinguoigui,
+                                            dongia: dataPNK.dongia
                                         });
                                         await newPNKDetail.save();
                                     });
@@ -181,5 +182,123 @@ module.exports = {
         }
     },
 
+    editPNK: async (req, res, next) => {
+        try {
+            const { malohang, tenkienhang, soluongkienhang, dongia,
+                trangthai, loaikienhang, khochuakienhang, diachikhochua, diachinguoinhan,
+                tennguoigui, sdtnguoigui, diachinguoigui, dataUpdate } = req.body;
 
+            const foundPNK = await PhieuNhapKhoChiTiet.findOne({ malohang: dataUpdate.malohang, tenkienhang: dataUpdate.tenkienhang,soluongkienhang: dataUpdate.soluongkienhang,
+                dongia: dataUpdate.dongia, trangthai: dataUpdate.trangthai, loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang,
+                diachinguoinhan: dataUpdate.diachinguoinhan, tennguoigui: dataUpdate.tennguoigui, sdtnguoigui: dataUpdate.sdtnguoigui, diachinguoigui: dataUpdate.diachinguoigui  });
+            if (!foundPNK) {
+                res.status(403).json({ message: "PNK is not in data" });
+            }
+            else {
+                const tenkienhangUpdate = (tenkienhang !== '' && tenkienhang !== undefined) ? tenkienhang : foundPNK.tenkienhang;
+                const soluongkienhangUpdate = (soluongkienhang !== '' && soluongkienhang !== undefined) ? soluongkienhang : foundPNK.soluongkienhang;
+                const dongiaUpdate = (dongia !== '' && dongia !== undefined) ? dongia : foundPNK.dongia;
+                const trangthaiUpdate = (trangthai !== '' && trangthai !== undefined) ? trangthai : foundPNK.trangthai;
+                const loaikienhangUpdate = (loaikienhang !== '' && loaikienhang !== undefined) ? loaikienhang : foundPNK.loaikienhang;
+                const khochuakienhangUpdate = (khochuakienhang !== '' && khochuakienhang !== undefined) ? khochuakienhang : foundPNK.khochuakienhang;
+                const diachikhochuaUpdate = (diachikhochua !== '' && diachikhochua !== undefined) ? diachikhochua : foundPNK.diachikhochua;
+                const diachinguoinhanUpdate = (diachinguoinhan !== '' && diachinguoinhan !== undefined) ? diachinguoinhan : foundPNK.diachinguoinhan;
+                const tennguoiguiUpdate = (tennguoigui !== '' && tennguoigui !== undefined) ? tennguoigui : foundPNK.tennguoigui;
+                const sdtnguoiguiUpdate = (sdtnguoigui !== '' && sdtnguoigui !== undefined) ? sdtnguoigui : foundPNK.sdtnguoigui;
+                const diachinguoiguiUpdate = (diachinguoigui !== '' && diachinguoigui !== undefined) ? diachinguoigui : foundPNK.diachinguoigui;
+               
+                let dongiaChitietUpdate = dongiaUpdate;
+                if(dongiaUpdate.includes(",")){
+                    dongiaChitietUpdate = (dongiaUpdate).split(",").join("");
+                }
+                
+                PhieuNhapKhoChiTiet.findOneAndUpdate({ _id: foundPNK._id },
+                    {
+                        $set: {
+                            tenkienhang: tenkienhangUpdate, soluongkienhang: soluongkienhangUpdate,
+                            dongia: new Intl.NumberFormat().format(dongiaChitietUpdate) , trangthai: trangthaiUpdate, loaikienhang: loaikienhangUpdate,
+                            khochuakienhang: khochuakienhangUpdate, diachikhochua: diachikhochuaUpdate,
+                            diachinguoinhan: diachinguoinhanUpdate, tennguoigui: tennguoiguiUpdate,
+                            sdtnguoigui: sdtnguoiguiUpdate, diachinguoigui: diachinguoiguiUpdate
+                        }
+                    }, async function (err, docs) {
+                        if (err) {
+                            res.status(404).json({ message: "update PNK error" });
+                        }
+                        else {
+                            //update tong tien
+                            const foundPNKUpdate = await PhieuNhapKho.findOne({ malohang });
+                            const dongiaDetail = (foundPNK.dongia).split(",").join("");
+                            const dongiaUpdateFormat = (dongiaUpdate).split(",").join("");
+                            const foundPNKUpdateFormat = (foundPNKUpdate.tongtien).split(",").join("");
+                            
+                            const totalUpdate = parseFloat(foundPNKUpdateFormat, 10) - parseFloat(dongiaDetail, 10) + parseFloat(dongiaUpdateFormat, 10);
+                            PhieuNhapKho.findOneAndUpdate({ _id: foundPNKUpdate._id },
+                                {
+                                    $set: {
+                                        tongtien: new Intl.NumberFormat().format(totalUpdate)
+                                    }
+                                }, function (err, docs) {
+                                    if (err) {
+                                        res.status(404).json({ message: "update PNK error" });
+                                    }
+                                    else {
+                                        res.status(200).json({ message: "update PNK success" });
+                                    }
+                                });
+                        }
+                    });
+            }
+
+        } catch (error) {
+            console.log(error);
+            res.status(400).json({ message: "update PNK error" });
+        }
+    },
+
+    deletePNK: async (req, res, next) => {
+        try {
+            const { dataUpdate } = req.body;
+            const foundPNK = await PhieuNhapKhoChiTiet.findOne({ malohang: dataUpdate.malohang, tenkienhang: dataUpdate.tenkienhang,soluongkienhang: dataUpdate.soluongkienhang,
+                dongia: dataUpdate.dongia, trangthai: dataUpdate.trangthai, loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang,
+                diachinguoinhan: dataUpdate.diachinguoinhan, tennguoigui: dataUpdate.tennguoigui, sdtnguoigui: dataUpdate.sdtnguoigui, diachinguoigui: dataUpdate.diachinguoigui  });
+            if (!foundPNK) {
+                res.status(403).json({ message: "PNK is not in data" });
+            }
+            else{
+                PhieuNhapKhoChiTiet.findOneAndDelete({ malohang: dataUpdate.malohang, tenkienhang: dataUpdate.tenkienhang,soluongkienhang: dataUpdate.soluongkienhang,
+                    dongia: dataUpdate.dongia, trangthai: dataUpdate.trangthai, loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang,
+                    diachinguoinhan: dataUpdate.diachinguoinhan, tennguoigui: dataUpdate.tennguoigui, sdtnguoigui: dataUpdate.sdtnguoigui, diachinguoigui: dataUpdate.diachinguoigui }, async function (err, docs) {
+                    if (err){
+                        res.status(404).json({ message: "delete PNK error" });
+                    }
+                    else{
+                        const malohangCheck = dataUpdate.malohang
+                        //update tong tien
+                        const foundPNKUpdate = await PhieuNhapKho.findOne({ malohang: malohangCheck });
+                        const dongiaDetail = (foundPNK.dongia).split(",").join("");
+                        const foundPNKUpdateFormat = (foundPNKUpdate.tongtien).split(",").join("");
+                        
+                        const totalUpdate = parseFloat(foundPNKUpdateFormat, 10) - parseFloat(dongiaDetail, 10);
+                        PhieuNhapKho.findOneAndUpdate({ _id: foundPNKUpdate._id },
+                            {
+                                $set: {
+                                    tongtien: new Intl.NumberFormat().format(totalUpdate)
+                                }
+                            }, function (err, docs) {
+                                if (err) {
+                                    res.status(404).json({ message: "update PNK error" });
+                                }
+                                else {
+                                    res.status(200).json({ message: "update PNK success" });
+                                }
+                            });
+                    }
+                });
+            }
+        } catch (error) {
+            console.log(error);
+            res.status(400).json({ message: "delete PNK error" });
+        }
+    },
 }

@@ -17,4 +17,10 @@ router.route('/getbymalohang-pnkdetail')
 router.route('/search-pnk')
     .post(passportJWT, PhieuNhapKhoController.searchPNK);
 
+router.route('/edit-pnk')
+    .post(passportJWT, PhieuNhapKhoController.editPNK);
+
+router.route('/delete-pnk')
+    .post(passportJWT, PhieuNhapKhoController.deletePNK);
+
 module.exports = router;

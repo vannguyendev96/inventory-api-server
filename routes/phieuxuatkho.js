@@ -20,4 +20,10 @@ router.route('/search-pxk')
 router.route('/report')
     .get(passportJWT, PhieuXuatKhoController.report);
 
+router.route('/edit-pxk')
+    .post(passportJWT, PhieuXuatKhoController.editPXK);
+
+router.route('/delete-pxk')
+    .post(passportJWT, PhieuXuatKhoController.deletePXK);
+
 module.exports = router;
