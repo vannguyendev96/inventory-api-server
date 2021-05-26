@@ -1,6 +1,7 @@
 const PhieuXuatKho = require('../models/phieuxuatkho');
 const PhieuNhapKho = require('../models/phieunhapkho');
 const PhieuXuatKhoChiTiet = require('../models/phieuxuatkhochitiet');
+const KienHangTonKho = require('../models/kienhangtonkho');
 
 module.exports = {
     createPNK: async (req, res, next) => {
@@ -28,6 +29,39 @@ module.exports = {
                                     dongia: dataPXK.dongia
                                 });
                                 await newPXKDetail.save();
+
+                                const foundKHTK = await KienHangTonKho.findOne({
+                                    tenkienhang: (dataPXK.tenkienhang).toLowerCase(),
+                                    dongia: dataPXK.dongia, loaikienhang: dataPXK.loaikienhang,
+                                    khochuakienhang: dataPXK.khochuakienhang
+                                });
+
+                                if (parseFloat(foundKHTK.soluongkienhang, 10) - parseFloat(dataPXK.soluongkienhang, 10) === 0) {
+                                    //xoa
+                                    KienHangTonKho.findOneAndDelete({
+                                        tenkienhang: (dataPXK.tenkienhang).toLowerCase(),
+                                        dongia: dataPXK.dongia, loaikienhang: dataPXK.loaikienhang,
+                                        khochuakienhang: dataPXK.khochuakienhang
+                                    }, async function (err, docs) {
+                                        if (err) {
+                                            res.status(404).json({ message: "delete KHTK error" });
+                                        }
+                                    });
+                                }
+                                else {
+                                    const khtkQty = parseFloat(foundKHTK.soluongkienhang, 10) - parseFloat(dataPXK.soluongkienhang, 10);
+
+                                    KienHangTonKho.findOneAndUpdate({ _id: foundKHTK._id },
+                                        {
+                                            $set: {
+                                                soluongkienhang: khtkQty
+                                            }
+                                        }, async function (err, docs) {
+                                            if (err) {
+                                                res.status(404).json({ message: "create PXK error" });
+                                            }
+                                        });
+                                }
                             });
                             res.status(200).json({ malohang: "1000" });
                         })
@@ -61,6 +95,39 @@ module.exports = {
                                             dongia: dataPXK.dongia
                                         });
                                         await newPXKDetail.save();
+
+                                        const foundKHTK = await KienHangTonKho.findOne({
+                                            tenkienhang: (dataPXK.tenkienhang).toLowerCase(),
+                                            dongia: dataPXK.dongia, loaikienhang: dataPXK.loaikienhang,
+                                            khochuakienhang: dataPXK.khochuakienhang
+                                        });
+
+                                        if (parseFloat(foundKHTK.soluongkienhang, 10) - parseFloat(dataPXK.soluongkienhang, 10) === 0) {
+                                            //xoa
+                                            KienHangTonKho.findOneAndDelete({
+                                                tenkienhang: (dataPXK.tenkienhang).toLowerCase(),
+                                                dongia: dataPXK.dongia, loaikienhang: dataPXK.loaikienhang,
+                                                khochuakienhang: dataPXK.khochuakienhang
+                                            }, async function (err, docs) {
+                                                if (err) {
+                                                    res.status(404).json({ message: "delete KHTK error" });
+                                                }
+                                            });
+                                        }
+                                        else {
+                                            const khtkQty = parseFloat(foundKHTK.soluongkienhang, 10) - parseFloat(dataPXK.soluongkienhang, 10);
+
+                                            KienHangTonKho.findOneAndUpdate({ _id: foundKHTK._id },
+                                                {
+                                                    $set: {
+                                                        soluongkienhang: khtkQty
+                                                    }
+                                                }, async function (err, docs) {
+                                                    if (err) {
+                                                        res.status(404).json({ message: "create PXK error" });
+                                                    }
+                                                });
+                                        }
                                     });
                                     res.status(200).json({ malohang: malohangCheck });
                                 })
@@ -214,10 +281,15 @@ module.exports = {
                 diachinguoigui: dataUpdate.diachinguoigui, tennguoinhan: dataUpdate.tennguoinhan, sdtnguoinhan: dataUpdate.sdtnguoinhan, diachinguoinhan: dataUpdate.diachinguoinhan
             });
 
+            const foundKHTK = await KienHangTonKho.findOne({
+                tenkienhang: (dataUpdate.tenkienhang).toLowerCase(),
+                dongia: dataUpdate.dongia, loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang
+            });
+
             if (!foundPXK) {
                 res.status(403).json({ message: "PXK is not in data" });
             }
-            else{
+            else {
                 const tenkienhangUpdate = (tenkienhang !== '' && tenkienhang !== undefined) ? tenkienhang : foundPNK.tenkienhang;
                 const soluongkienhangUpdate = (soluongkienhang !== '' && soluongkienhang !== undefined) ? soluongkienhang : foundPNK.soluongkienhang;
                 const dongiaUpdate = (dongia !== '' && dongia !== undefined) ? dongia : foundPNK.dongia;
@@ -231,46 +303,64 @@ module.exports = {
                 const diachinguoinhanUpdate = (diachinguoinhan !== '' && diachinguoinhan !== undefined) ? diachinguoinhan : foundPNK.diachinguoinhan;
 
                 let dongiaChitietUpdate = dongiaUpdate;
-            if(dongiaUpdate.includes(",")){
-                dongiaChitietUpdate = (dongiaUpdate).split(",").join("");
-            }
+                if (dongiaUpdate.includes(",")) {
+                    dongiaChitietUpdate = (dongiaUpdate).split(",").join("");
+                }
 
-            PhieuXuatKhoChiTiet.findOneAndUpdate({ _id: foundPXK._id },
-                {
-                    $set: {
-                        tenkienhang: tenkienhangUpdate, soluongkienhang: soluongkienhangUpdate,
-                        dongia: new Intl.NumberFormat().format(dongiaChitietUpdate) , trangthai: trangthaiUpdate, loaikienhang: loaikienhangUpdate,
-                        khochuakienhang: khochuakienhangUpdate, diachikhochua: diachikhochuaUpdate,
-                        diachinguoigui: diachinguoiguiUpdate, tennguoinhan: tennguoinhanUpdate,
-                        sdtnguoinhan: sdtnguoinhanUpdate, diachinguoinhan: diachinguoinhanUpdate
-                    }
-                }, async function (err, docs) {
-                    if (err) {
-                        res.status(404).json({ message: "update PXK error" });
-                    }
-                    else {
-                        //update tong tien
-                        const foundPXKUpdate = await PhieuXuatKho.findOne({ malohang });
-                        const dongiaDetail = (foundPXK.dongia).split(",").join("");
-                        const dongiaUpdateFormat = (dongiaUpdate).split(",").join("");
-                        const foundPXKUpdateFormat = (foundPXKUpdate.sotienthanhtoan).split(",").join("");
-                        
-                        const totalUpdate = parseFloat(foundPXKUpdateFormat, 10) - parseFloat(dongiaDetail, 10) + parseFloat(dongiaUpdateFormat, 10);
-                        PhieuXuatKho.findOneAndUpdate({ _id: foundPXKUpdate._id },
-                            {
-                                $set: {
-                                    sotienthanhtoan: new Intl.NumberFormat().format(totalUpdate)
-                                }
-                            }, function (err, docs) {
-                                if (err) {
-                                    res.status(404).json({ message: "update PNK error" });
-                                }
-                                else {
-                                    res.status(200).json({ message: "update PNK success" });
-                                }
-                            });
-                    }
-                });
+                PhieuXuatKhoChiTiet.findOneAndUpdate({ _id: foundPXK._id },
+                    {
+                        $set: {
+                            tenkienhang: tenkienhangUpdate, soluongkienhang: soluongkienhangUpdate,
+                            dongia: new Intl.NumberFormat().format(dongiaChitietUpdate), trangthai: trangthaiUpdate, loaikienhang: loaikienhangUpdate,
+                            khochuakienhang: khochuakienhangUpdate, diachikhochua: diachikhochuaUpdate,
+                            diachinguoigui: diachinguoiguiUpdate, tennguoinhan: tennguoinhanUpdate,
+                            sdtnguoinhan: sdtnguoinhanUpdate, diachinguoinhan: diachinguoinhanUpdate
+                        }
+                    }, async function (err, docs) {
+                        if (err) {
+                            res.status(404).json({ message: "update PXK error" });
+                        }
+                        else {
+                            //update tong tien
+                            const foundPXKUpdate = await PhieuXuatKho.findOne({ malohang });
+                            const dongiaDetail = (foundPXK.dongia).split(",").join("");
+                            const dongiaUpdateFormat = (dongiaUpdate).split(",").join("");
+                            const foundPXKUpdateFormat = (foundPXKUpdate.sotienthanhtoan).split(",").join("");
+
+                            const totalUpdate = parseFloat(foundPXKUpdateFormat, 10) - parseFloat(dongiaDetail, 10) + parseFloat(dongiaUpdateFormat, 10);
+                            PhieuXuatKho.findOneAndUpdate({ _id: foundPXKUpdate._id },
+                                {
+                                    $set: {
+                                        sotienthanhtoan: new Intl.NumberFormat().format(totalUpdate)
+                                    }
+                                }, function (err, docs) {
+                                    if (err) {
+                                        res.status(404).json({ message: "update PNK error" });
+                                    }
+                                });
+
+                            let qtyUpdateKHTK = 0;
+                            //co update so luong
+
+                            if (soluongkienhang !== '' && soluongkienhang !== undefined) {
+                                qtyUpdateKHTK = parseFloat(foundPXK.soluongkienhang, 10) - parseFloat(soluongkienhang, 10);
+                            }
+
+                            const qty = parseFloat(foundKHTK.soluongkienhang, 10) + parseFloat(qtyUpdateKHTK, 10);
+                            KienHangTonKho.findOneAndUpdate({ _id: foundKHTK._id },
+                                {
+                                    $set: {
+                                        soluongkienhang: qty,
+                                    }
+                                }, async function (err, docs) {
+                                    if (err) {
+                                        res.status(404).json({ message: "create PNK error" });
+                                    }
+                                });
+
+                            res.status(200).json({ message: "update PNK success" });
+                        }
+                    });
             }
         } catch (error) {
             console.log(error);
@@ -288,23 +378,30 @@ module.exports = {
                 diachinguoigui: dataUpdate.diachinguoigui, tennguoinhan: dataUpdate.tennguoinhan, sdtnguoinhan: dataUpdate.sdtnguoinhan, diachinguoinhan: dataUpdate.diachinguoinhan
             });
 
+            const foundKHTK = await KienHangTonKho.findOne({
+                tenkienhang: (dataUpdate.tenkienhang).toLowerCase(),
+                dongia: dataUpdate.dongia, loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang
+            });
+
             if (!foundPXK) {
                 res.status(403).json({ message: "PXK is not in data" });
             }
-            else{
-                PhieuXuatKhoChiTiet.findOneAndDelete({ malohang: dataUpdate.malohang, tenkienhang: dataUpdate.tenkienhang, soluongkienhang: dataUpdate.soluongkienhang,
+            else {
+                PhieuXuatKhoChiTiet.findOneAndDelete({
+                    malohang: dataUpdate.malohang, tenkienhang: dataUpdate.tenkienhang, soluongkienhang: dataUpdate.soluongkienhang,
                     dongia: dataUpdate.dongia, trangthai: dataUpdate.trangthai, loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang,
-                    diachinguoigui: dataUpdate.diachinguoigui, tennguoinhan: dataUpdate.tennguoinhan, sdtnguoinhan: dataUpdate.sdtnguoinhan, diachinguoinhan: dataUpdate.diachinguoinhan }, async function (err, docs) {
-                    if (err){
+                    diachinguoigui: dataUpdate.diachinguoigui, tennguoinhan: dataUpdate.tennguoinhan, sdtnguoinhan: dataUpdate.sdtnguoinhan, diachinguoinhan: dataUpdate.diachinguoinhan
+                }, async function (err, docs) {
+                    if (err) {
                         res.status(404).json({ message: "delete PXK error" });
                     }
-                    else{
+                    else {
                         const malohangCheck = dataUpdate.malohang
                         //update tong tien
                         const foundPXKUpdate = await PhieuXuatKho.findOne({ malohang: malohangCheck });
                         const dongiaDetail = (foundPXK.dongia).split(",").join("");
                         const foundPXKUpdateFormat = (foundPXKUpdate.sotienthanhtoan).split(",").join("");
-                        
+
                         const totalUpdate = parseFloat(foundPXKUpdateFormat, 10) - parseFloat(dongiaDetail, 10);
                         PhieuXuatKho.findOneAndUpdate({ _id: foundPXKUpdate._id },
                             {
@@ -315,10 +412,24 @@ module.exports = {
                                 if (err) {
                                     res.status(404).json({ message: "update PXK error" });
                                 }
-                                else {
-                                    res.status(200).json({ message: "update PXK success" });
-                                }
                             });
+
+                        if (foundKHTK) {
+                            const qty = parseFloat(foundKHTK.soluongkienhang, 10) + parseFloat(foundPXK.soluongkienhang, 10);
+
+                            KienHangTonKho.findOneAndUpdate({ _id: foundKHTK._id },
+                                {
+                                    $set: {
+                                        soluongkienhang: qty,
+                                    }
+                                }, async function (err, docs) {
+                                    if (err) {
+                                        res.status(404).json({ message: "update PXK error" });
+                                    }
+                                });
+                        }
+
+                        res.status(200).json({ message: "update PXK success" });
                     }
                 });
             }

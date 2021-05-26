@@ -23,4 +23,10 @@ router.route('/edit-pnk')
 router.route('/delete-pnk')
     .post(passportJWT, PhieuNhapKhoController.deletePNK);
 
+router.route('/get-khtk')
+    .get(passportJWT, PhieuNhapKhoController.getListKHTK);
+
+router.route('/getdetail-khtk')
+    .post(passportJWT, PhieuNhapKhoController.getDetailKHTKByID);
+
 module.exports = router;
