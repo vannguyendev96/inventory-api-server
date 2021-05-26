@@ -327,7 +327,7 @@ module.exports = {
                             const dongiaUpdateFormat = (dongiaUpdate).split(",").join("");
                             const foundPXKUpdateFormat = (foundPXKUpdate.sotienthanhtoan).split(",").join("");
 
-                            const totalUpdate = parseFloat(foundPXKUpdateFormat, 10) - parseFloat(dongiaDetail, 10) + parseFloat(dongiaUpdateFormat, 10);
+                            const totalUpdate = parseFloat(foundPXKUpdateFormat, 10) - parseFloat(dongiaDetail, 10)*parseFloat(foundPXK.soluongkienhang, 10) + parseFloat(dongiaUpdateFormat, 10)*parseFloat(soluongkienhangUpdate, 10);
                             PhieuXuatKho.findOneAndUpdate({ _id: foundPXKUpdate._id },
                                 {
                                     $set: {

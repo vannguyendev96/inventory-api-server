@@ -67,7 +67,8 @@ app.use('/users', require('./routes/users'));
 app.use('/drivers', require('./routes/drivers'));
 app.use('/warehouses', require('./routes/warehouse'));
 app.use('/phieunhapkho', require('./routes/phieunhapkho'));
-app.use('/phieuxuatkho', require('./routes/phieuxuatkho.js'));
+app.use('/phieuxuatkho', require('./routes/phieuxuatkho'));
+app.use('/kiemke', require('./routes/kiemke'));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
