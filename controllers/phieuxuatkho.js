@@ -327,7 +327,7 @@ module.exports = {
                             const dongiaUpdateFormat = (dongiaUpdate).split(",").join("");
                             const foundPXKUpdateFormat = (foundPXKUpdate.sotienthanhtoan).split(",").join("");
 
-                            const totalUpdate = parseFloat(foundPXKUpdateFormat, 10) - parseFloat(dongiaDetail, 10)*parseFloat(foundPXK.soluongkienhang, 10) + parseFloat(dongiaUpdateFormat, 10)*parseFloat(soluongkienhangUpdate, 10);
+                            const totalUpdate = parseFloat(foundPXKUpdateFormat, 10) - parseFloat(dongiaDetail, 10) * parseFloat(foundPXK.soluongkienhang, 10) + parseFloat(dongiaUpdateFormat, 10) * parseFloat(soluongkienhangUpdate, 10);
                             PhieuXuatKho.findOneAndUpdate({ _id: foundPXKUpdate._id },
                                 {
                                     $set: {
@@ -397,22 +397,44 @@ module.exports = {
                     }
                     else {
                         const malohangCheck = dataUpdate.malohang
-                        //update tong tien
-                        const foundPXKUpdate = await PhieuXuatKho.findOne({ malohang: malohangCheck });
-                        const dongiaDetail = (foundPXK.dongia).split(",").join("");
-                        const foundPXKUpdateFormat = (foundPXKUpdate.sotienthanhtoan).split(",").join("");
 
-                        const totalUpdate = parseFloat(foundPXKUpdateFormat, 10) - parseFloat(dongiaDetail, 10);
-                        PhieuXuatKho.findOneAndUpdate({ _id: foundPXKUpdate._id },
-                            {
-                                $set: {
-                                    sotienthanhtoan: new Intl.NumberFormat().format(totalUpdate)
-                                }
-                            }, function (err, docs) {
+                        const foundPXKChecked = await PhieuXuatKhoChiTiet.findOne({
+                            malohang: malohangCheck
+                        });
+                        if (foundPXKChecked) {
+                            //update tong tien
+                            const foundPXKUpdate = await PhieuXuatKho.findOne({ malohang: malohangCheck });
+                            const dongiaDetail = (foundPXK.dongia).split(",").join("");
+                            const foundPXKUpdateFormat = (foundPXKUpdate.sotienthanhtoan).split(",").join("");
+
+                            const totalUpdate = parseFloat(foundPXKUpdateFormat, 10) - parseFloat(dongiaDetail, 10) * parseFloat(foundPXK.soluongkienhang, 10);
+                            PhieuXuatKho.findOneAndUpdate({ _id: foundPXKUpdate._id },
+                                {
+                                    $set: {
+                                        sotienthanhtoan: new Intl.NumberFormat().format(totalUpdate)
+                                    }
+                                }, function (err, docs) {
+                                    if (err) {
+                                        res.status(404).json({ message: "update PXK error" });
+                                    }
+                                });
+                        }
+                        else {
+                            const foundPXKDelete = await PhieuXuatKho.findOne({
+                                malohang: malohangCheck
+                            });
+                            // console.log(foundPNKDelete)
+                            const id = foundPXKDelete._id;
+                            PhieuXuatKho.findByIdAndDelete(id, function (err, docs) {
                                 if (err) {
-                                    res.status(404).json({ message: "update PXK error" });
+                                    console.log(err)
+                                }
+                                else {
+                                    console.log("Deleted : ", docs);
                                 }
                             });
+                        }
+
 
                         if (foundKHTK) {
                             const qty = parseFloat(foundKHTK.soluongkienhang, 10) + parseFloat(foundPXK.soluongkienhang, 10);

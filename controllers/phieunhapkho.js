@@ -377,22 +377,44 @@ module.exports = {
                     }
                     else {
                         const malohangCheck = dataUpdate.malohang
-                        //update tong tien
-                        const foundPNKUpdate = await PhieuNhapKho.findOne({ malohang: malohangCheck });
-                        const dongiaDetail = (foundPNK.dongia).split(",").join("");
-                        const foundPNKUpdateFormat = (foundPNKUpdate.tongtien).split(",").join("");
+                        const foundPNKChecked = await PhieuNhapKhoChiTiet.findOne({
+                            malohang: malohangCheck
+                        });
 
-                        const totalUpdate = parseFloat(foundPNKUpdateFormat, 10) - parseFloat(dongiaDetail, 10);
-                        PhieuNhapKho.findOneAndUpdate({ _id: foundPNKUpdate._id },
-                            {
-                                $set: {
-                                    tongtien: new Intl.NumberFormat().format(totalUpdate)
+                        if(foundPNKChecked){
+                            //update tong tien
+                            const foundPNKUpdate = await PhieuNhapKho.findOne({ malohang: malohangCheck });
+                            const dongiaDetail = (foundPNK.dongia).split(",").join("");
+                            const foundPNKUpdateFormat = (foundPNKUpdate.tongtien).split(",").join("");
+    
+                            const totalUpdate = parseFloat(foundPNKUpdateFormat, 10) - parseFloat(dongiaDetail, 10)*parseFloat(foundPNK.soluongkienhang, 10);
+                            PhieuNhapKho.findOneAndUpdate({ _id: foundPNKUpdate._id },
+                                {
+                                    $set: {
+                                        tongtien: new Intl.NumberFormat().format(totalUpdate)
+                                    }
+                                }, function (err, docs) {
+                                    if (err) {
+                                        res.status(404).json({ message: "update PNK error" });
+                                    }
+                                });
+                        }
+                        else{
+                            const foundPNKDelete = await PhieuNhapKho.findOne({
+                                 malohang: malohangCheck
+                            });
+                            // console.log(foundPNKDelete)
+                            const id = foundPNKDelete._id;
+                            PhieuNhapKho.findByIdAndDelete(id, function (err, docs) {
+                                if (err){
+                                    console.log(err)
                                 }
-                            }, function (err, docs) {
-                                if (err) {
-                                    res.status(404).json({ message: "update PNK error" });
+                                else{
+                                    console.log("Deleted : ", docs);
                                 }
                             });
+                        }
+                    
 
                         if (foundKHTK) {
                             if (parseFloat(foundKHTK.soluongkienhang, 10) > parseFloat(foundPNK.soluongkienhang, 10)) {
