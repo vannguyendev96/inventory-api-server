@@ -5,6 +5,14 @@ module.exports = {
         try {
             const { data, soluong, trangthai } = req.body;
 
+            if( parseFloat(soluong, 10) <= 0){
+                return res.status(404).json({ message: "Số lượng kiểm kê phải lớn hơn 0 " });
+            }
+
+            if( trangthai === ""){
+                return res.status(404).json({ message: "Vui lòng nhập trạng thái kiện hàng kiểm kê " });
+            }
+
             let today = new Date();
             let created = (today.getMonth() + 1) + '-' + (today.getDate()) + '-' + today.getFullYear();
 

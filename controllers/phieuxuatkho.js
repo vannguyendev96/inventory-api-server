@@ -275,6 +275,27 @@ module.exports = {
                 trangthai, loaikienhang, khochuakienhang, diachikhochua, diachinguoigui,
                 tennguoinhan, sdtnguoinhan, diachinguoinhan, dataUpdate } = req.body;
 
+            console.log("sau update", soluongkienhang);
+            console.log("truoc update", dataUpdate.soluongkienhang);
+
+            if( parseFloat(soluongkienhang, 10) <= 0){
+                return res.status(404).json({ message: "Số lượng xuất kho phải lớn hơn 0" });
+            }
+
+            const checkSoLuong = parseFloat(soluongkienhang, 10) - parseFloat(dataUpdate.soluongkienhang, 10);
+            if(checkSoLuong > 0){
+                const tonkho = await  KienHangTonKho.findOne({ 
+                    tenkienhang: dataUpdate.tenkienhang,
+                    dongia: dataUpdate.dongia,
+                    loaikienhang: dataUpdate.loaikienhang,
+                    khochuakienhang: dataUpdate.khochuakienhang,
+                })
+                const soluongtoida = parseFloat(dataUpdate.soluongkienhang, 10) + parseFloat(tonkho.soluongkienhang, 10);
+                if(parseFloat(dataUpdate.soluongkienhang, 10) < checkSoLuong){
+                    return res.status(404).json({ message: `Tồn kho của kiện hàng ${dataUpdate.tenkienhang} chỉ còn ${tonkho.soluongkienhang}. Chỉ được xuất kho tối đa ${soluongtoida}` });
+                }
+            }
+
             const foundPXK = await PhieuXuatKhoChiTiet.findOne({
                 malohang: dataUpdate.malohang, tenkienhang: dataUpdate.tenkienhang, soluongkienhang: dataUpdate.soluongkienhang,
                 dongia: dataUpdate.dongia, trangthai: dataUpdate.trangthai, loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang,

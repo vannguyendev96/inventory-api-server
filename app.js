@@ -17,6 +17,7 @@ const dbUrl = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@$
 const db = (process.env.DB_USERNAME !== undefined) ? dbUrl : process.env.DB_URL;
 mongoose.connect(db, {
   //mongoose.connect(process.env.DB_URL,  {
+  useFindAndModify: false,
   useNewUrlParser: true,
   useUnifiedTopology: true,
   autoIndex: false
