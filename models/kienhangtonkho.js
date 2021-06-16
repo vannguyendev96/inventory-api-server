@@ -12,6 +12,10 @@ const kienhangtonkhoSchema = new Schema({
         type: String,
         require: true
     },
+    khoiluongkienhang: {
+        type: String,
+        require: true
+    },
     dongia: {
         type: String,
         require: true

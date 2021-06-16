@@ -5,7 +5,7 @@ const KienHangTonKho = require('../models/kienhangtonkho');
 module.exports = {
     createPNK: async (req, res, next) => {
         try {
-            const { data, driver } = req.body;
+            const { data, driver, dongiacuoc, quangduongdichuyen } = req.body;
 
             let today = new Date();
             let created = (today.getMonth() + 1) + '-' + (today.getDate()) + '-' + today.getFullYear();
@@ -14,22 +14,26 @@ module.exports = {
 
             data.forEach(dataPNK => {
                 const dongiaConvert = (dataPNK.dongia).split(",").join("");
-                tongtienlohang = tongtienlohang + parseFloat(dongiaConvert, 10) * parseFloat(dataPNK.soluongkienhang, 10);
+                tongtienlohang = tongtienlohang + parseFloat(dongiaConvert, 10) * parseFloat(dataPNK.soluongkienhang, 10)* parseFloat(dataPNK.khoiluongkienhang, 10);
             });
+
+            tongtienlohang = tongtienlohang + (parseFloat(dongiacuoc, 10)*quangduongdichuyen);
 
             const check = await PhieuNhapKho.find();
 
             if (check.length === 0) {
                 const newPNK = PhieuNhapKho({
                     malohang: "1000", nguoitaolohang: data[0].nguoitaolohang, ngaytaolohang: created,
-                    taixevanchuyen: driver, tongtien: new Intl.NumberFormat().format(tongtienlohang)
+                    taixevanchuyen: driver, dongiacuoc: dongiacuoc, quangduongdichuyen: quangduongdichuyen,
+                    tongtien: new Intl.NumberFormat().format(tongtienlohang)
                 });
                 await newPNK
                     .save()
                     .then(async (doc) => {
                         data.forEach(async dataPNK => {
                             const newPNKDetail = PhieuNhapKhoChiTiet({
-                                malohang: "1000", nguoitaolohang: dataPNK.nguoitaolohang, tenkienhang: dataPNK.tenkienhang, soluongkienhang: dataPNK.soluongkienhang, trangthai: dataPNK.trangthai,
+                                malohang: "1000", nguoitaolohang: dataPNK.nguoitaolohang, tenkienhang: dataPNK.tenkienhang,
+                                soluongkienhang: dataPNK.soluongkienhang, khoiluongkienhang: dataPNK.khoiluongkienhang, trangthai: dataPNK.trangthai,
                                 loaikienhang: dataPNK.loaikienhang, khochuakienhang: dataPNK.khochuakienhang, diachikhochua: dataPNK.diachikhochua,
                                 tennguoinhan: dataPNK.tennguoinhan, sdtnguoinhan: dataPNK.sdtnguoinhan, diachinguoinhan: dataPNK.diachinguoinhan,
                                 tennguoigui: dataPNK.tennguoigui, sdtnguoigui: dataPNK.sdtnguoigui, diachinguoigui: dataPNK.diachinguoigui,
@@ -39,13 +43,15 @@ module.exports = {
 
                             const foundKHTK = await KienHangTonKho.findOne({
                                 tenkienhang: (dataPNK.tenkienhang).toLowerCase(),
-                                dongia: dataPNK.dongia, loaikienhang: dataPNK.loaikienhang, khochuakienhang: dataPNK.khochuakienhang
+                                dongia: dataPNK.dongia, khoiluongkienhang: dataPNK.khoiluongkienhang,
+                                loaikienhang: dataPNK.loaikienhang, khochuakienhang: dataPNK.khochuakienhang
                             });
 
                             if (!foundKHTK) {
                                 const newKienHangTonKho = KienHangTonKho({
                                     tenkienhang: dataPNK.tenkienhang,
                                     soluongkienhang: dataPNK.soluongkienhang,
+                                    khoiluongkienhang: dataPNK.khoiluongkienhang,
                                     dongia: dataPNK.dongia,
                                     loaikienhang: dataPNK.loaikienhang,
                                     khochuakienhang: dataPNK.khochuakienhang,
@@ -55,10 +61,12 @@ module.exports = {
                             }
                             else {
                                 const khtkQty = parseFloat(foundKHTK.soluongkienhang, 10) + parseFloat(dataPNK.soluongkienhang, 10);
+                                //const khtkKLKH = parseFloat(foundKHTK.khoiluongkienhang, 10) + parseFloat(dataPNK.khoiluongkienhang, 10);
                                 KienHangTonKho.findOneAndUpdate({ _id: foundKHTK._id },
                                     {
                                         $set: {
-                                            soluongkienhang: khtkQty
+                                            soluongkienhang: khtkQty,
+                                            //khoiluongkienhang: khtkKLKH
                                         }
                                     }, async function (err, docs) {
                                         if (err) {
@@ -86,7 +94,8 @@ module.exports = {
                 else {
                     const newPNK = PhieuNhapKho({
                         malohang: malohangCheck, nguoitaolohang: data[0].nguoitaolohang, ngaytaolohang: created,
-                        taixevanchuyen: driver, tongtien: new Intl.NumberFormat().format(tongtienlohang)
+                        taixevanchuyen: driver, dongiacuoc: dongiacuoc, quangduongdichuyen: quangduongdichuyen,
+                        tongtien: new Intl.NumberFormat().format(tongtienlohang)
                     });
 
                     await newPNK.save();
@@ -94,7 +103,8 @@ module.exports = {
 
                     data.forEach(async dataPNK => {
                         const newPNKDetail = PhieuNhapKhoChiTiet({
-                            malohang: malohangCheck, nguoitaolohang: dataPNK.nguoitaolohang, tenkienhang: dataPNK.tenkienhang, soluongkienhang: dataPNK.soluongkienhang, trangthai: dataPNK.trangthai,
+                            malohang: malohangCheck, nguoitaolohang: dataPNK.nguoitaolohang, tenkienhang: dataPNK.tenkienhang, 
+                            soluongkienhang: dataPNK.soluongkienhang, khoiluongkienhang: dataPNK.khoiluongkienhang, trangthai: dataPNK.trangthai,
                             loaikienhang: dataPNK.loaikienhang, khochuakienhang: dataPNK.khochuakienhang, diachikhochua: dataPNK.diachikhochua,
                             tennguoinhan: dataPNK.tennguoinhan, sdtnguoinhan: dataPNK.sdtnguoinhan, diachinguoinhan: dataPNK.diachinguoinhan,
                             tennguoigui: dataPNK.tennguoigui, sdtnguoigui: dataPNK.sdtnguoigui, diachinguoigui: dataPNK.diachinguoigui,
@@ -104,13 +114,15 @@ module.exports = {
 
                         const foundKHTK = await KienHangTonKho.findOne({
                             tenkienhang: (dataPNK.tenkienhang).toLowerCase(),
-                            dongia: dataPNK.dongia, loaikienhang: dataPNK.loaikienhang, khochuakienhang: dataPNK.khochuakienhang
+                            dongia: dataPNK.dongia, khoiluongkienhang: dataPNK.khoiluongkienhang,
+                            loaikienhang: dataPNK.loaikienhang, khochuakienhang: dataPNK.khochuakienhang
                         });
 
                         if (!foundKHTK) {
                             const newKienHangTonKho = KienHangTonKho({
                                 tenkienhang: dataPNK.tenkienhang,
                                 soluongkienhang: dataPNK.soluongkienhang,
+                                khoiluongkienhang: dataPNK.khoiluongkienhang, 
                                 dongia: dataPNK.dongia,
                                 loaikienhang: dataPNK.loaikienhang,
                                 khochuakienhang: dataPNK.khochuakienhang,
@@ -120,10 +132,12 @@ module.exports = {
                         }
                         else {
                             const khtkQty = parseFloat(foundKHTK.soluongkienhang, 10) + parseFloat(dataPNK.soluongkienhang, 10);
+                            //const khtkKLKH = parseFloat(foundKHTK.khoiluongkienhang, 10) + parseFloat(dataPNK.khoiluongkienhang, 10);
                             await KienHangTonKho.findOneAndUpdate({ _id: foundKHTK._id },
                                 {
                                     $set: {
-                                        soluongkienhang: khtkQty
+                                        soluongkienhang: khtkQty,
+                                        //khoiluongkienhang: khtkKLKH
                                     }
                                 }, function (err, docs) {
                                     if (err) {
@@ -134,74 +148,6 @@ module.exports = {
                     });
                     res.status(200).json({ malohang: malohangCheck });
                 }
-
-
-
-
-                // await PhieuNhapKho.find().sort({ malohang: -1 }).then(async (pnk) => {
-                //     const malohangCheck = (parseInt(pnk[0].malohang) + 1).toString();
-                //     const foundPNK = await PhieuNhapKho.findOne({ malohang: malohangCheck });
-                //     if (foundPNK) {
-                //         res.status(403).json({ message: "ID PNK is a already in use" });
-                //     }
-                //     else {
-                //         const newPNK = await PhieuNhapKho({
-                //             malohang: malohangCheck, nguoitaolohang: data[0].nguoitaolohang, ngaytaolohang: created,
-                //             taixevanchuyen: driver, tongtien: new Intl.NumberFormat().format(tongtienlohang)
-                //         });
-                //         await newPNK
-                //             .save()
-                //             .then(async (doc) => {
-                //                 data.forEach(async dataPNK => {
-                //                     const newPNKDetail = await PhieuNhapKhoChiTiet({
-                //                         malohang: malohangCheck, nguoitaolohang: dataPNK.nguoitaolohang, tenkienhang: dataPNK.tenkienhang, soluongkienhang: dataPNK.soluongkienhang, trangthai: dataPNK.trangthai,
-                //                         loaikienhang: dataPNK.loaikienhang, khochuakienhang: dataPNK.khochuakienhang, diachikhochua: dataPNK.diachikhochua,
-                //                         tennguoinhan: dataPNK.tennguoinhan, sdtnguoinhan: dataPNK.sdtnguoinhan, diachinguoinhan: dataPNK.diachinguoinhan,
-                //                         tennguoigui: dataPNK.tennguoigui, sdtnguoigui: dataPNK.sdtnguoigui, diachinguoigui: dataPNK.diachinguoigui,
-                //                         dongia: dataPNK.dongia
-                //                     });
-                //                     await newPNKDetail.save();
-
-                //                     const foundKHTK = await KienHangTonKho.findOne({
-                //                         tenkienhang: (dataPNK.tenkienhang).toLowerCase(),
-                //                         dongia: dataPNK.dongia, loaikienhang: dataPNK.loaikienhang, khochuakienhang: dataPNK.khochuakienhang
-                //                     });
-
-                //                     if (!foundKHTK) {
-                //                         const newKienHangTonKho = await KienHangTonKho({
-                //                             tenkienhang: dataPNK.tenkienhang,
-                //                             soluongkienhang: dataPNK.soluongkienhang,
-                //                             dongia: dataPNK.dongia,
-                //                             loaikienhang: dataPNK.loaikienhang,
-                //                             khochuakienhang: dataPNK.khochuakienhang,
-                //                             kiemke: "chưa kiểm kê"
-                //                         })
-                //                         await newKienHangTonKho.save();
-                //                     }
-                //                     else {
-                //                         const khtkQty = parseFloat(foundKHTK.soluongkienhang, 10) + parseFloat(dataPNK.soluongkienhang, 10);
-                //                         await KienHangTonKho.findOneAndUpdate({ _id: foundKHTK._id },
-                //                             {
-                //                                 $set: {
-                //                                     soluongkienhang: khtkQty
-                //                                 }
-                //                             }, async function (err, docs) {
-                //                                 if (err) {
-                //                                     res.status(404).json({ message: "create PNK error" });
-                //                                 }
-                //                                 else {
-                //                                     res.status(200).json({ malohang: malohangCheck });
-                //                                 }
-                //                             });
-                //                     }
-                //                 });
-                //             })
-                //             .catch(err => {
-                //                 console.log(error);
-                //                 res.status(400).json({ message: "create PNK error" });
-                //             });
-                //     }
-                // })
             }
         } catch (error) {
             console.log(error);
@@ -309,19 +255,21 @@ module.exports = {
 
     editPNK: async (req, res, next) => {
         try {
-            const { malohang, tenkienhang, soluongkienhang, dongia,
+            const { malohang, tenkienhang, soluongkienhang, khoiluongkienhang, dongia,
                 trangthai, loaikienhang, khochuakienhang, diachikhochua, diachinguoinhan,
                 tennguoigui, sdtnguoigui, diachinguoigui, dataUpdate } = req.body;
 
             const foundPNK = await PhieuNhapKhoChiTiet.findOne({
-                malohang: dataUpdate.malohang, tenkienhang: dataUpdate.tenkienhang, soluongkienhang: dataUpdate.soluongkienhang,
+                malohang: dataUpdate.malohang, tenkienhang: dataUpdate.tenkienhang, 
+                soluongkienhang: dataUpdate.soluongkienhang, khoiluongkienhang: dataUpdate.khoiluongkienhang,
                 dongia: dataUpdate.dongia, trangthai: dataUpdate.trangthai, loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang,
                 diachinguoinhan: dataUpdate.diachinguoinhan, tennguoigui: dataUpdate.tennguoigui, sdtnguoigui: dataUpdate.sdtnguoigui, diachinguoigui: dataUpdate.diachinguoigui
             });
 
             const foundKHTK = await KienHangTonKho.findOne({
                 tenkienhang: (dataUpdate.tenkienhang).toLowerCase(),
-                dongia: dataUpdate.dongia, loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang
+                dongia: dataUpdate.dongia,khoiluongkienhang: dataUpdate.khoiluongkienhang,
+                loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang
             });
 
             if (!foundPNK) {
@@ -330,6 +278,7 @@ module.exports = {
             else {
                 const tenkienhangUpdate = (tenkienhang !== '' && tenkienhang !== undefined) ? tenkienhang : foundPNK.tenkienhang;
                 const soluongkienhangUpdate = (soluongkienhang !== '' && soluongkienhang !== undefined) ? soluongkienhang : foundPNK.soluongkienhang;
+                const khoiluongkienhangUpdate = (khoiluongkienhang !== '' && khoiluongkienhang !== undefined) ? khoiluongkienhang : foundPNK.khoiluongkienhang;
                 const dongiaUpdate = (dongia !== '' && dongia !== undefined) ? dongia : foundPNK.dongia;
                 const trangthaiUpdate = (trangthai !== '' && trangthai !== undefined) ? trangthai : foundPNK.trangthai;
                 const loaikienhangUpdate = (loaikienhang !== '' && loaikienhang !== undefined) ? loaikienhang : foundPNK.loaikienhang;
@@ -348,7 +297,8 @@ module.exports = {
                 PhieuNhapKhoChiTiet.findOneAndUpdate({ _id: foundPNK._id },
                     {
                         $set: {
-                            tenkienhang: tenkienhangUpdate, soluongkienhang: soluongkienhangUpdate,
+                            tenkienhang: tenkienhangUpdate, 
+                            soluongkienhang: soluongkienhangUpdate, khoiluongkienhang: khoiluongkienhangUpdate,
                             dongia: new Intl.NumberFormat().format(dongiaChitietUpdate), trangthai: trangthaiUpdate, loaikienhang: loaikienhangUpdate,
                             khochuakienhang: khochuakienhangUpdate, diachikhochua: diachikhochuaUpdate,
                             diachinguoinhan: diachinguoinhanUpdate, tennguoigui: tennguoiguiUpdate,
@@ -365,7 +315,7 @@ module.exports = {
                             const dongiaUpdateFormat = (dongiaUpdate).split(",").join("");
                             const foundPNKUpdateFormat = (foundPNKUpdate.tongtien).split(",").join("");
 
-                            const totalUpdate = parseFloat(foundPNKUpdateFormat, 10) - parseFloat(dongiaDetail, 10) * parseFloat(foundPNK.soluongkienhang, 10) + parseFloat(dongiaUpdateFormat, 10) * parseFloat(soluongkienhangUpdate, 10);
+                            const totalUpdate = parseFloat(foundPNKUpdateFormat, 10) - parseFloat(dongiaDetail, 10) * parseFloat(foundPNK.soluongkienhang, 10) * parseFloat(foundPNK.khoiluongkienhang, 10) + parseFloat(dongiaUpdateFormat, 10) * parseFloat(soluongkienhangUpdate, 10)* parseFloat(khoiluongkienhangUpdate, 10);
                             PhieuNhapKho.findOneAndUpdate({ _id: foundPNKUpdate._id },
                                 {
                                     $set: {
@@ -385,11 +335,14 @@ module.exports = {
                             }
 
                             const qty = parseFloat(foundKHTK.soluongkienhang, 10) + parseFloat(qtyUpdateKHTK, 10);
+
+                            
                             KienHangTonKho.findOneAndUpdate({ _id: foundKHTK._id },
                                 {
                                     $set: {
                                         tenkienhang: tenkienhangUpdate,
                                         soluongkienhang: qty,
+                                        khoiluongkienhang: khoiluongkienhangUpdate,
                                         dongia: new Intl.NumberFormat().format(dongiaChitietUpdate),
                                         loaikienhang: loaikienhangUpdate,
                                         khochuakienhang: khochuakienhangUpdate
@@ -415,14 +368,16 @@ module.exports = {
         try {
             const { dataUpdate } = req.body;
             const foundPNK = await PhieuNhapKhoChiTiet.findOne({
-                malohang: dataUpdate.malohang, tenkienhang: dataUpdate.tenkienhang, soluongkienhang: dataUpdate.soluongkienhang,
+                malohang: dataUpdate.malohang, tenkienhang: dataUpdate.tenkienhang, 
+                soluongkienhang: dataUpdate.soluongkienhang, khoiluongkienhang: dataUpdate.khoiluongkienhang,
                 dongia: dataUpdate.dongia, trangthai: dataUpdate.trangthai, loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang,
                 diachinguoinhan: dataUpdate.diachinguoinhan, tennguoigui: dataUpdate.tennguoigui, sdtnguoigui: dataUpdate.sdtnguoigui, diachinguoigui: dataUpdate.diachinguoigui
             });
 
             const foundKHTK = await KienHangTonKho.findOne({
                 tenkienhang: (dataUpdate.tenkienhang).toLowerCase(),
-                dongia: dataUpdate.dongia, loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang
+                dongia: dataUpdate.dongia, khoiluongkienhang: dataUpdate.khoiluongkienhang,
+                loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang
             });
 
             if (!foundPNK) {
@@ -430,7 +385,8 @@ module.exports = {
             }
             else {
                 PhieuNhapKhoChiTiet.findOneAndDelete({
-                    malohang: dataUpdate.malohang, tenkienhang: dataUpdate.tenkienhang, soluongkienhang: dataUpdate.soluongkienhang,
+                    malohang: dataUpdate.malohang, tenkienhang: dataUpdate.tenkienhang, 
+                    soluongkienhang: dataUpdate.soluongkienhang, khoiluongkienhang: dataUpdate.khoiluongkienhang,
                     dongia: dataUpdate.dongia, trangthai: dataUpdate.trangthai, loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang,
                     diachinguoinhan: dataUpdate.diachinguoinhan, tennguoigui: dataUpdate.tennguoigui, sdtnguoigui: dataUpdate.sdtnguoigui, diachinguoigui: dataUpdate.diachinguoigui
                 }, async function (err, docs) {
@@ -449,7 +405,7 @@ module.exports = {
                             const dongiaDetail = (foundPNK.dongia).split(",").join("");
                             const foundPNKUpdateFormat = (foundPNKUpdate.tongtien).split(",").join("");
 
-                            const totalUpdate = parseFloat(foundPNKUpdateFormat, 10) - parseFloat(dongiaDetail, 10) * parseFloat(foundPNK.soluongkienhang, 10);
+                            const totalUpdate = parseFloat(foundPNKUpdateFormat, 10) - parseFloat(dongiaDetail, 10) * parseFloat(foundPNK.soluongkienhang, 10)* parseFloat(foundPNK.khoiluongkienhang, 10) ;
                             PhieuNhapKho.findOneAndUpdate({ _id: foundPNKUpdate._id },
                                 {
                                     $set: {
@@ -482,11 +438,12 @@ module.exports = {
                             if (parseFloat(foundKHTK.soluongkienhang, 10) > parseFloat(foundPNK.soluongkienhang, 10)) {
                                 //update lai so luong
                                 const qty = parseFloat(foundKHTK.soluongkienhang, 10) - parseFloat(foundPNK.soluongkienhang, 10);
-
+                                //const qtykl = parseFloat(foundKHTK.khoiluongkienhang, 10) - parseFloat(foundPNK.khoiluongkienhang, 10);
                                 KienHangTonKho.findOneAndUpdate({ _id: foundKHTK._id },
                                     {
                                         $set: {
                                             soluongkienhang: qty,
+                                            //khoiluongkienhang: qtykl
                                         }
                                     }, async function (err, docs) {
                                         if (err) {
@@ -498,7 +455,8 @@ module.exports = {
                             else {
                                 KienHangTonKho.findOneAndDelete({
                                     tenkienhang: (dataUpdate.tenkienhang).toLowerCase(),
-                                    dongia: dataUpdate.dongia, loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang
+                                    dongia: dataUpdate.dongia, khoiluongkienhang: dataUpdate.khoiluongkienhang,
+                                    loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang
                                 }, async function (err, docs) {
                                     if (err) {
                                         res.status(404).json({ message: "update PNK error" });

@@ -6,23 +6,31 @@ const KienHangTonKho = require('../models/kienhangtonkho');
 module.exports = {
     createPNK: async (req, res, next) => {
         try {
-            const { data, lydoxuatkho, sotienthanhtoan, phuongthucthanhtoan, taixevanchuyen } = req.body;
+            const { data, lydoxuatkho, sotienthanhtoan, phuongthucthanhtoan, taixevanchuyen, 
+                dongiacuoc, quangduongdichuyen } = req.body;
 
             let today = new Date();
             let created = (today.getMonth() + 1) + '-' + (today.getDate()) + '-' + today.getFullYear();
+
+            //const tongConvert = (sotienthanhtoan).split(",").join("");
+            const tongtienXuatKho = parseFloat(sotienthanhtoan, 10) + (parseFloat(dongiacuoc, 10)*quangduongdichuyen);
 
             PhieuXuatKho.find().then(async (check) => {
                 if (check.length === 0) {
                     const newPXK = PhieuXuatKho({
                         malohang: "1000", nguoitaolohang: data[0].nguoitaolohang, ngaytaolohang: created, lydoxuatkho,
-                        sotienthanhtoan: new Intl.NumberFormat().format(sotienthanhtoan), phuongthucthanhtoan, taixevanchuyen
+                        sotienthanhtoan: new Intl.NumberFormat().format(tongtienXuatKho), phuongthucthanhtoan,
+                        //sotienthanhtoan: tongtienXuatKho, phuongthucthanhtoan, 
+                        taixevanchuyen, dongiacuoc, quangduongdichuyen
                     });
                     await newPXK
                         .save()
                         .then(async (doc) => {
                             data.forEach(async dataPXK => {
                                 const newPXKDetail = PhieuXuatKhoChiTiet({
-                                    malohang: "1000", nguoitaolohang: dataPXK.nguoitaolohang, tenkienhang: dataPXK.tenkienhang, soluongkienhang: dataPXK.soluongkienhang, trangthai: dataPXK.trangthai,
+                                    malohang: "1000", nguoitaolohang: dataPXK.nguoitaolohang, tenkienhang: dataPXK.tenkienhang, 
+                                    soluongkienhang: dataPXK.soluongkienhang, khoiluongkienhang: dataPXK.khoiluongkienhang,
+                                    trangthai: dataPXK.trangthai,
                                     loaikienhang: dataPXK.loaikienhang, khochuakienhang: dataPXK.khochuakienhang, diachikhochua: dataPXK.diachikhochua,
                                     tennguoinhan: dataPXK.tennguoinhan, sdtnguoinhan: dataPXK.sdtnguoinhan, diachinguoinhan: dataPXK.diachinguoinhan,
                                     tennguoigui: dataPXK.tennguoigui, sdtnguoigui: dataPXK.sdtnguoigui, diachinguoigui: dataPXK.diachinguoigui,
@@ -32,7 +40,9 @@ module.exports = {
 
                                 const foundKHTK = await KienHangTonKho.findOne({
                                     tenkienhang: (dataPXK.tenkienhang).toLowerCase(),
-                                    dongia: dataPXK.dongia, loaikienhang: dataPXK.loaikienhang,
+                                    dongia: dataPXK.dongia, 
+                                    khoiluongkienhang: dataPXK.khoiluongkienhang,
+                                    loaikienhang: dataPXK.loaikienhang,
                                     khochuakienhang: dataPXK.khochuakienhang
                                 });
 
@@ -40,7 +50,8 @@ module.exports = {
                                     //xoa
                                     KienHangTonKho.findOneAndDelete({
                                         tenkienhang: (dataPXK.tenkienhang).toLowerCase(),
-                                        dongia: dataPXK.dongia, loaikienhang: dataPXK.loaikienhang,
+                                        dongia: dataPXK.dongia, khoiluongkienhang: dataPXK.khoiluongkienhang,
+                                        loaikienhang: dataPXK.loaikienhang,
                                         khochuakienhang: dataPXK.khochuakienhang
                                     }, async function (err, docs) {
                                         if (err) {
@@ -81,14 +92,18 @@ module.exports = {
                             const newPXK = PhieuXuatKho({
                                 malohang: malohangCheck, nguoitaolohang: data[0].nguoitaolohang,
                                 ngaytaolohang: created, lydoxuatkho,
-                                sotienthanhtoan: new Intl.NumberFormat().format(sotienthanhtoan), phuongthucthanhtoan, taixevanchuyen
+                                sotienthanhtoan: new Intl.NumberFormat().format(tongtienXuatKho), 
+                                //sotienthanhtoan: tongtienXuatKho,
+                                phuongthucthanhtoan, taixevanchuyen
                             });
                             await newPXK
                                 .save()
                                 .then(async (doc) => {
                                     data.forEach(async dataPXK => {
                                         const newPXKDetail = PhieuXuatKhoChiTiet({
-                                            malohang: malohangCheck, nguoitaolohang: dataPXK.nguoitaolohang, tenkienhang: dataPXK.tenkienhang, soluongkienhang: dataPXK.soluongkienhang, trangthai: dataPXK.trangthai,
+                                            malohang: malohangCheck, nguoitaolohang: dataPXK.nguoitaolohang, tenkienhang: dataPXK.tenkienhang, 
+                                            soluongkienhang: dataPXK.soluongkienhang, khoiluongkienhang: dataPXK.khoiluongkienhang,
+                                            trangthai: dataPXK.trangthai,
                                             loaikienhang: dataPXK.loaikienhang, khochuakienhang: dataPXK.khochuakienhang, diachikhochua: dataPXK.diachikhochua,
                                             tennguoinhan: dataPXK.tennguoinhan, sdtnguoinhan: dataPXK.sdtnguoinhan, diachinguoinhan: dataPXK.diachinguoinhan,
                                             tennguoigui: dataPXK.tennguoigui, sdtnguoigui: dataPXK.sdtnguoigui, diachinguoigui: dataPXK.diachinguoigui,
@@ -98,7 +113,8 @@ module.exports = {
 
                                         const foundKHTK = await KienHangTonKho.findOne({
                                             tenkienhang: (dataPXK.tenkienhang).toLowerCase(),
-                                            dongia: dataPXK.dongia, loaikienhang: dataPXK.loaikienhang,
+                                            dongia: dataPXK.dongia, khoiluongkienhang: dataPXK.khoiluongkienhang,
+                                            loaikienhang: dataPXK.loaikienhang,
                                             khochuakienhang: dataPXK.khochuakienhang
                                         });
 
@@ -271,12 +287,9 @@ module.exports = {
 
     editPXK: async (req, res, next) => {
         try {
-            const { malohang, tenkienhang, soluongkienhang, dongia,
+            const { malohang, tenkienhang, soluongkienhang, khoiluongkienhang, dongia,
                 trangthai, loaikienhang, khochuakienhang, diachikhochua, diachinguoigui,
                 tennguoinhan, sdtnguoinhan, diachinguoinhan, dataUpdate } = req.body;
-
-            console.log("sau update", soluongkienhang);
-            console.log("truoc update", dataUpdate.soluongkienhang);
 
             if( parseFloat(soluongkienhang, 10) <= 0){
                 return res.status(404).json({ message: "Số lượng xuất kho phải lớn hơn 0" });
@@ -287,6 +300,7 @@ module.exports = {
                 const tonkho = await  KienHangTonKho.findOne({ 
                     tenkienhang: dataUpdate.tenkienhang,
                     dongia: dataUpdate.dongia,
+                    khoiluongkienhang: dataUpdate.khoiluongkienhang,
                     loaikienhang: dataUpdate.loaikienhang,
                     khochuakienhang: dataUpdate.khochuakienhang,
                 })
@@ -297,31 +311,34 @@ module.exports = {
             }
 
             const foundPXK = await PhieuXuatKhoChiTiet.findOne({
-                malohang: dataUpdate.malohang, tenkienhang: dataUpdate.tenkienhang, soluongkienhang: dataUpdate.soluongkienhang,
+                malohang: dataUpdate.malohang, tenkienhang: dataUpdate.tenkienhang, 
+                soluongkienhang: dataUpdate.soluongkienhang,khoiluongkienhang: dataUpdate.khoiluongkienhang, 
                 dongia: dataUpdate.dongia, trangthai: dataUpdate.trangthai, loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang,
                 diachinguoigui: dataUpdate.diachinguoigui, tennguoinhan: dataUpdate.tennguoinhan, sdtnguoinhan: dataUpdate.sdtnguoinhan, diachinguoinhan: dataUpdate.diachinguoinhan
             });
 
             const foundKHTK = await KienHangTonKho.findOne({
                 tenkienhang: (dataUpdate.tenkienhang).toLowerCase(),
-                dongia: dataUpdate.dongia, loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang
+                dongia: dataUpdate.dongia, khoiluongkienhang: dataUpdate.khoiluongkienhang,
+                loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang
             });
 
             if (!foundPXK) {
                 res.status(403).json({ message: "PXK is not in data" });
             }
             else {
-                const tenkienhangUpdate = (tenkienhang !== '' && tenkienhang !== undefined) ? tenkienhang : foundPNK.tenkienhang;
-                const soluongkienhangUpdate = (soluongkienhang !== '' && soluongkienhang !== undefined) ? soluongkienhang : foundPNK.soluongkienhang;
-                const dongiaUpdate = (dongia !== '' && dongia !== undefined) ? dongia : foundPNK.dongia;
-                const trangthaiUpdate = (trangthai !== '' && trangthai !== undefined) ? trangthai : foundPNK.trangthai;
-                const loaikienhangUpdate = (loaikienhang !== '' && loaikienhang !== undefined) ? loaikienhang : foundPNK.loaikienhang;
-                const khochuakienhangUpdate = (khochuakienhang !== '' && khochuakienhang !== undefined) ? khochuakienhang : foundPNK.khochuakienhang;
-                const diachikhochuaUpdate = (diachikhochua !== '' && diachikhochua !== undefined) ? diachikhochua : foundPNK.diachikhochua;
-                const diachinguoiguiUpdate = (diachinguoigui !== '' && diachinguoigui !== undefined) ? diachinguoigui : foundPNK.diachinguoigui;
-                const tennguoinhanUpdate = (tennguoinhan !== '' && tennguoinhan !== undefined) ? tennguoinhan : foundPNK.tennguoinhan;
-                const sdtnguoinhanUpdate = (sdtnguoinhan !== '' && sdtnguoinhan !== undefined) ? sdtnguoinhan : foundPNK.sdtnguoinhan;
-                const diachinguoinhanUpdate = (diachinguoinhan !== '' && diachinguoinhan !== undefined) ? diachinguoinhan : foundPNK.diachinguoinhan;
+                const tenkienhangUpdate = (tenkienhang !== '' && tenkienhang !== undefined) ? tenkienhang : foundPXK.tenkienhang;
+                const soluongkienhangUpdate = (soluongkienhang !== '' && soluongkienhang !== undefined) ? soluongkienhang : foundPXK.soluongkienhang;
+                const khoiluongkienhangUpdate = (khoiluongkienhang !== '' && khoiluongkienhang !== undefined) ? khoiluongkienhang : foundPXK.khoiluongkienhang;
+                const dongiaUpdate = (dongia !== '' && dongia !== undefined) ? dongia : foundPXK.dongia;
+                const trangthaiUpdate = (trangthai !== '' && trangthai !== undefined) ? trangthai : foundPXK.trangthai;
+                const loaikienhangUpdate = (loaikienhang !== '' && loaikienhang !== undefined) ? loaikienhang : foundPXK.loaikienhang;
+                const khochuakienhangUpdate = (khochuakienhang !== '' && khochuakienhang !== undefined) ? khochuakienhang : foundPXK.khochuakienhang;
+                const diachikhochuaUpdate = (diachikhochua !== '' && diachikhochua !== undefined) ? diachikhochua : foundPXK.diachikhochua;
+                const diachinguoiguiUpdate = (diachinguoigui !== '' && diachinguoigui !== undefined) ? diachinguoigui : foundPXK.diachinguoigui;
+                const tennguoinhanUpdate = (tennguoinhan !== '' && tennguoinhan !== undefined) ? tennguoinhan : foundPXK.tennguoinhan;
+                const sdtnguoinhanUpdate = (sdtnguoinhan !== '' && sdtnguoinhan !== undefined) ? sdtnguoinhan : foundPXK.sdtnguoinhan;
+                const diachinguoinhanUpdate = (diachinguoinhan !== '' && diachinguoinhan !== undefined) ? diachinguoinhan : foundPXK.diachinguoinhan;
 
                 let dongiaChitietUpdate = dongiaUpdate;
                 if (dongiaUpdate.includes(",")) {
@@ -331,7 +348,8 @@ module.exports = {
                 PhieuXuatKhoChiTiet.findOneAndUpdate({ _id: foundPXK._id },
                     {
                         $set: {
-                            tenkienhang: tenkienhangUpdate, soluongkienhang: soluongkienhangUpdate,
+                            tenkienhang: tenkienhangUpdate, 
+                            soluongkienhang: soluongkienhangUpdate,khoiluongkienhang: khoiluongkienhangUpdate,
                             dongia: new Intl.NumberFormat().format(dongiaChitietUpdate), trangthai: trangthaiUpdate, loaikienhang: loaikienhangUpdate,
                             khochuakienhang: khochuakienhangUpdate, diachikhochua: diachikhochuaUpdate,
                             diachinguoigui: diachinguoiguiUpdate, tennguoinhan: tennguoinhanUpdate,
@@ -348,7 +366,7 @@ module.exports = {
                             const dongiaUpdateFormat = (dongiaUpdate).split(",").join("");
                             const foundPXKUpdateFormat = (foundPXKUpdate.sotienthanhtoan).split(",").join("");
 
-                            const totalUpdate = parseFloat(foundPXKUpdateFormat, 10) - parseFloat(dongiaDetail, 10) * parseFloat(foundPXK.soluongkienhang, 10) + parseFloat(dongiaUpdateFormat, 10) * parseFloat(soluongkienhangUpdate, 10);
+                            const totalUpdate = parseFloat(foundPXKUpdateFormat, 10) - parseFloat(dongiaDetail, 10) * parseFloat(foundPXK.soluongkienhang, 10)* parseFloat(foundPXK.khoiluongkienhang, 10) + parseFloat(dongiaUpdateFormat, 10) * parseFloat(soluongkienhangUpdate, 10)* parseFloat(khoiluongkienhangUpdate, 10);
                             PhieuXuatKho.findOneAndUpdate({ _id: foundPXKUpdate._id },
                                 {
                                     $set: {
@@ -394,14 +412,16 @@ module.exports = {
             const { dataUpdate } = req.body;
 
             const foundPXK = await PhieuXuatKhoChiTiet.findOne({
-                malohang: dataUpdate.malohang, tenkienhang: dataUpdate.tenkienhang, soluongkienhang: dataUpdate.soluongkienhang,
+                malohang: dataUpdate.malohang, tenkienhang: dataUpdate.tenkienhang, 
+                soluongkienhang: dataUpdate.soluongkienhang, khoiluongkienhang: dataUpdate.khoiluongkienhang, 
                 dongia: dataUpdate.dongia, trangthai: dataUpdate.trangthai, loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang,
                 diachinguoigui: dataUpdate.diachinguoigui, tennguoinhan: dataUpdate.tennguoinhan, sdtnguoinhan: dataUpdate.sdtnguoinhan, diachinguoinhan: dataUpdate.diachinguoinhan
             });
 
             const foundKHTK = await KienHangTonKho.findOne({
                 tenkienhang: (dataUpdate.tenkienhang).toLowerCase(),
-                dongia: dataUpdate.dongia, loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang
+                dongia: dataUpdate.dongia, khoiluongkienhang: dataUpdate.khoiluongkienhang,
+                loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang
             });
 
             if (!foundPXK) {
@@ -409,7 +429,8 @@ module.exports = {
             }
             else {
                 PhieuXuatKhoChiTiet.findOneAndDelete({
-                    malohang: dataUpdate.malohang, tenkienhang: dataUpdate.tenkienhang, soluongkienhang: dataUpdate.soluongkienhang,
+                    malohang: dataUpdate.malohang, tenkienhang: dataUpdate.tenkienhang, 
+                    soluongkienhang: dataUpdate.soluongkienhang, khoiluongkienhang: dataUpdate.khoiluongkienhang,
                     dongia: dataUpdate.dongia, trangthai: dataUpdate.trangthai, loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang,
                     diachinguoigui: dataUpdate.diachinguoigui, tennguoinhan: dataUpdate.tennguoinhan, sdtnguoinhan: dataUpdate.sdtnguoinhan, diachinguoinhan: dataUpdate.diachinguoinhan
                 }, async function (err, docs) {
@@ -428,7 +449,7 @@ module.exports = {
                             const dongiaDetail = (foundPXK.dongia).split(",").join("");
                             const foundPXKUpdateFormat = (foundPXKUpdate.sotienthanhtoan).split(",").join("");
 
-                            const totalUpdate = parseFloat(foundPXKUpdateFormat, 10) - parseFloat(dongiaDetail, 10) * parseFloat(foundPXK.soluongkienhang, 10);
+                            const totalUpdate = parseFloat(foundPXKUpdateFormat, 10) - parseFloat(dongiaDetail, 10) * parseFloat(foundPXK.soluongkienhang, 10)* parseFloat(foundPXK.khoiluongkienhang, 10);
                             PhieuXuatKho.findOneAndUpdate({ _id: foundPXKUpdate._id },
                                 {
                                     $set: {

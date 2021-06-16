@@ -21,6 +21,14 @@ const phieunhapkhoSchema = new Schema({
         type: String,
         require: true
     },
+    dongiacuoc: {
+        type: String,
+        require: true
+    },
+    quangduongdichuyen: {
+        type: String,
+        require: true
+    },
     tongtien: {
         type: String,
         require: true
