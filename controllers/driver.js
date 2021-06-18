@@ -1,10 +1,28 @@
 const Driver = require('../models/driver');
+const User = require('../models/user');
+
+async function checkSDT(sdt) {
+    const foundDriver = await Driver.findOne({ sdt });
+    const fountUser   = await User.findOne({ sdt });
+
+    if(foundDriver){
+        return true;
+    }
+    if(fountUser){
+        return true;
+    }
+    return false;
+}
 
 module.exports = {
     createInfoDriver: async (req,res,next) =>{
         try {
             const { cmnd, tentx,trangthai, sdt, namsinh, provine,district, phuong } = req.body;
 
+            const check = await checkSDT(sdt);
+            if(check){
+                return res.status(404).json({ message: "Số điện thoại không đường trùng" });
+            }
             const foundDriver = await Driver.findOne({ cmnd });
             if (foundDriver) {
                 res.status(403).json({ message: "Driver info is a already in use" });
@@ -63,6 +81,12 @@ module.exports = {
         try {
             const { cmnd, tentx,trangthai, sdt, namsinh, provine,district, phuong } = req.body;
             const foundDriver = await Driver.findOne({ cmnd });
+
+            const check = await checkSDT(sdt);
+            if(check){
+                return res.status(404).json({ message: "Số điện thoại không đường trùng" });
+            }
+            
             if (!foundDriver) {
                 res.status(403).json({ message: "Driver is not in data" });
             }
