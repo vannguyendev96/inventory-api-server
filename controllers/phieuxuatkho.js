@@ -9,6 +9,11 @@ module.exports = {
             const { data, lydoxuatkho, sotienthanhtoan, phuongthucthanhtoan, taixevanchuyen, 
                 dongiacuoc, quangduongdichuyen } = req.body;
 
+            let totalUpdateKHTH = 0;
+            for(let i=0;i< data.length; i++){
+                totalUpdateKHTH = totalUpdateKHTH + data[i].soluongkienhang
+            }
+
             let today = new Date();
             let created = (today.getMonth() + 1) + '-' + (today.getDate()) + '-' + today.getFullYear();
 
@@ -46,7 +51,7 @@ module.exports = {
                                     khochuakienhang: dataPXK.khochuakienhang
                                 });
 
-                                if (parseFloat(foundKHTK.soluongkienhang, 10) - parseFloat(dataPXK.soluongkienhang, 10) === 0) {
+                                if (parseFloat(foundKHTK.soluongkienhang, 10) - parseFloat(totalUpdateKHTH, 10) === 0) {
                                     //xoa
                                     KienHangTonKho.findOneAndDelete({
                                         tenkienhang: (dataPXK.tenkienhang).toLowerCase(),
@@ -60,8 +65,7 @@ module.exports = {
                                     });
                                 }
                                 else {
-                                    const khtkQty = parseFloat(foundKHTK.soluongkienhang, 10) - parseFloat(dataPXK.soluongkienhang, 10);
-
+                                    const khtkQty = parseFloat(foundKHTK.soluongkienhang, 10) - parseFloat(totalUpdateKHTH, 10);
                                     KienHangTonKho.findOneAndUpdate({ _id: foundKHTK._id },
                                         {
                                             $set: {
@@ -94,7 +98,8 @@ module.exports = {
                                 ngaytaolohang: created, lydoxuatkho,
                                 sotienthanhtoan: new Intl.NumberFormat().format(tongtienXuatKho), 
                                 //sotienthanhtoan: tongtienXuatKho,
-                                phuongthucthanhtoan, taixevanchuyen
+                                phuongthucthanhtoan, taixevanchuyen,
+                                dongiacuoc, quangduongdichuyen
                             });
                             await newPXK
                                 .save()
@@ -118,7 +123,7 @@ module.exports = {
                                             khochuakienhang: dataPXK.khochuakienhang
                                         });
 
-                                        if (parseFloat(foundKHTK.soluongkienhang, 10) - parseFloat(dataPXK.soluongkienhang, 10) === 0) {
+                                        if (parseFloat(foundKHTK.soluongkienhang, 10) - parseFloat(totalUpdateKHTH, 10) === 0) {
                                             //xoa
                                             KienHangTonKho.findOneAndDelete({
                                                 tenkienhang: (dataPXK.tenkienhang).toLowerCase(),
@@ -131,7 +136,7 @@ module.exports = {
                                             });
                                         }
                                         else {
-                                            const khtkQty = parseFloat(foundKHTK.soluongkienhang, 10) - parseFloat(dataPXK.soluongkienhang, 10);
+                                            const khtkQty = parseFloat(foundKHTK.soluongkienhang, 10) - parseFloat(totalUpdateKHTH, 10);
 
                                             KienHangTonKho.findOneAndUpdate({ _id: foundKHTK._id },
                                                 {
