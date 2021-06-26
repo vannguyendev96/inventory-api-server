@@ -1,5 +1,7 @@
 const PhieuNhapKho = require('../models/phieunhapkho');
 const PhieuNhapKhoChiTiet = require('../models/phieunhapkhochitiet');
+const PhieuXuatKho = require('../models/phieuxuatkho');
+const PhieuXuatKhoChiTiet = require('../models/phieuxuatkhochitiet');
 const Warehouse = require('../models/warehouse');
 
 async function getDoanhThu(khochua) {
@@ -7,9 +9,12 @@ async function getDoanhThu(khochua) {
     let listMaLoHang = [];
     await PhieuNhapKhoChiTiet.find({ khochuakienhang: khochua }).then((pnkchitiet) => {
         pnkchitiet.forEach(element => {
-            listMaLoHang.push(element.malohang)
+            if(!listMaLoHang.includes(element.malohang)){
+                listMaLoHang.push(element.malohang)
+            }
         });
     })
+    console.log(listMaLoHang)
     await PhieuNhapKho.find({ malohang: listMaLoHang }).then((pnk) => {
 
         for (let i = 0; i < pnk.length; i++) {
@@ -18,6 +23,34 @@ async function getDoanhThu(khochua) {
         }
         return result;
     })
+    return result;
+}
+
+async function getSoluongXuatNhap(khochua) {
+    let result = {};
+    let listMaLoHang = [];
+    await PhieuNhapKhoChiTiet.find({ khochuakienhang: khochua }).then((pnkchitiet) => {
+        pnkchitiet.forEach(element => {
+            if(!listMaLoHang.includes(element.malohang)){
+                listMaLoHang.push(element.malohang)
+            }
+        });
+    })
+    
+    let listMaLoHangXuat = [];
+    await PhieuXuatKhoChiTiet.find({ khochuakienhang: khochua }).then((pxkchitiet) => {
+        pxkchitiet.forEach(element => {
+            if(!listMaLoHangXuat.includes(element.malohang)){
+                listMaLoHangXuat.push(element.malohang)
+            }
+        });
+    })
+
+    result = {
+        tongthu: listMaLoHang.length,
+        tongxuat: listMaLoHangXuat.length
+    }
+
     return result;
 }
 
@@ -46,29 +79,19 @@ module.exports = {
         try {
             const result = [];
             await Warehouse.find().then(async (warehouse) => {
-                // warehouse.forEach(async khohang => {
-                //     const resultdoanhthu = await getDoanhThu(khohang.tenkhohang);
-                //     const dataAdd = {
-                //         _id: khohang._id,
-                //         tenkhohang: khohang.tenkhohang,
-                //         succhua: khohang.succhua,
-                //         trangthai: khohang.trangthai,
-                //         provine: khohang.provine,
-                //         district: khohang.district,
-                //         phuong: khohang.phuong,
-                //         doanhthu: resultdoanhthu,
-                //         __v: 0
-                //     }
-                //     result.push(dataAdd);
-                // });
                 for(let i=0; i< warehouse.length; i++)
                 {
                     const resultdoanhthu = await getDoanhThu(warehouse[i].tenkhohang);
+                    const tongxuatnhap = await getSoluongXuatNhap(warehouse[i].tenkhohang);
+
+                    console.log(tongxuatnhap)
                     const dataAdd = {
                         _id: warehouse[i]._id,
                         tenkhohang: warehouse[i].tenkhohang,
                         succhua: warehouse[i].succhua,
                         trangthai: warehouse[i].trangthai,
+                        tongxuat: tongxuatnhap.tongxuat,
+                        tongthu: tongxuatnhap.tongthu,
                         provine: warehouse[i].provine,
                         district: warehouse[i].district,
                         phuong: warehouse[i].phuong,
