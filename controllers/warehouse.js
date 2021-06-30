@@ -3,18 +3,18 @@ const PhieuNhapKhoChiTiet = require('../models/phieunhapkhochitiet');
 const PhieuXuatKho = require('../models/phieuxuatkho');
 const PhieuXuatKhoChiTiet = require('../models/phieuxuatkhochitiet');
 const Warehouse = require('../models/warehouse');
+const ThongKeNhapXuatKho = require('../models/thongkenhapxuat');
 
 async function getDoanhThu(khochua) {
     let result = 0;
     let listMaLoHang = [];
     await PhieuNhapKhoChiTiet.find({ khochuakienhang: khochua }).then((pnkchitiet) => {
         pnkchitiet.forEach(element => {
-            if(!listMaLoHang.includes(element.malohang)){
+            if (!listMaLoHang.includes(element.malohang)) {
                 listMaLoHang.push(element.malohang)
             }
         });
     })
-    console.log(listMaLoHang)
     await PhieuNhapKho.find({ malohang: listMaLoHang }).then((pnk) => {
 
         for (let i = 0; i < pnk.length; i++) {
@@ -29,26 +29,27 @@ async function getDoanhThu(khochua) {
 async function getSoluongXuatNhap(khochua) {
     let result = {};
     let listMaLoHang = [];
+    let tongsoluongkienhangnhapkho = 0;
     await PhieuNhapKhoChiTiet.find({ khochuakienhang: khochua }).then((pnkchitiet) => {
         pnkchitiet.forEach(element => {
-            if(!listMaLoHang.includes(element.malohang)){
-                listMaLoHang.push(element.malohang)
-            }
+            // if(!listMaLoHang.includes(element.malohang)){
+            //     listMaLoHang.push(element.malohang)
+            // }
+            tongsoluongkienhangnhapkho = tongsoluongkienhangnhapkho + parseFloat(element.soluongkienhang, 10)
         });
     })
-    
+
     let listMaLoHangXuat = [];
+    let tongsoluongkienhangxuatkho = 0;
     await PhieuXuatKhoChiTiet.find({ khochuakienhang: khochua }).then((pxkchitiet) => {
         pxkchitiet.forEach(element => {
-            if(!listMaLoHangXuat.includes(element.malohang)){
-                listMaLoHangXuat.push(element.malohang)
-            }
+            tongsoluongkienhangxuatkho = tongsoluongkienhangxuatkho + parseFloat(element.soluongkienhang, 10)
         });
     })
 
     result = {
-        tongthu: listMaLoHang.length,
-        tongxuat: listMaLoHangXuat.length
+        tongthu: tongsoluongkienhangnhapkho,
+        tongxuat: tongsoluongkienhangxuatkho
     }
 
     return result;
@@ -79,12 +80,12 @@ module.exports = {
         try {
             const result = [];
             await Warehouse.find().then(async (warehouse) => {
-                for(let i=0; i< warehouse.length; i++)
-                {
+                for (let i = 0; i < warehouse.length; i++) {
                     const resultdoanhthu = await getDoanhThu(warehouse[i].tenkhohang);
                     const tongxuatnhap = await getSoluongXuatNhap(warehouse[i].tenkhohang);
 
-                    console.log(tongxuatnhap)
+                    const tile = (parseFloat(tongxuatnhap.tongxuat, 10) / parseFloat(tongxuatnhap.tongthu, 10)) * 100
+
                     const dataAdd = {
                         _id: warehouse[i]._id,
                         tenkhohang: warehouse[i].tenkhohang,
@@ -92,6 +93,7 @@ module.exports = {
                         trangthai: warehouse[i].trangthai,
                         tongxuat: tongxuatnhap.tongxuat,
                         tongthu: tongxuatnhap.tongthu,
+                        tile: tile,
                         provine: warehouse[i].provine,
                         district: warehouse[i].district,
                         phuong: warehouse[i].phuong,
@@ -183,6 +185,22 @@ module.exports = {
         } catch (error) {
             console.log(error);
             res.status(400).json({ message: "get info user error" });
+        }
+    },
+
+    getListThongKe: async (req, res, next) => {
+        try {
+            ThongKeNhapXuatKho.find().then((thongke) => {
+                res.json({
+                    result: 'ok',
+                    data: thongke,
+                    length: thongke.length,
+                    message: 'get thong ke successfully'
+                })
+            })
+        } catch (error) {
+            console.log(error);
+            res.status(400).json({ message: "get Thongke error" });
         }
     },
 }

@@ -11,6 +11,9 @@ router.route('/create-warehouse')
 router.route('/getlist-warehouse')
     .get(passportJWT, WarehouseController.getListWarehouse);
 
+router.route('/thongkekienhang')
+    .get(passportJWT, WarehouseController.getListThongKe);
+
 router.route('/delete-warehouse')
     .post(passportJWT, WarehouseController.deleteWarehouse);
 

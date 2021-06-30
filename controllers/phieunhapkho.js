@@ -2,6 +2,8 @@ const PhieuNhapKho = require('../models/phieunhapkho');
 const PhieuNhapKhoChiTiet = require('../models/phieunhapkhochitiet');
 const KienHangTonKho = require('../models/kienhangtonkho');
 
+const ThongKeNhapXuatKho = require('../models/thongkenhapxuat');
+
 const User = require('../models/user');
 
 
@@ -44,17 +46,52 @@ module.exports = {
                             });
                             await newPNKDetail.save();
 
+                            const foundThongke = await ThongKeNhapXuatKho.findOne({
+                                tenkienhang: (dataPNK.tenkienhang).toLowerCase(),
+                                loaikienhang: dataPNK.loaikienhang
+                            });
+                            if (!foundThongke) {
+                                const newThongKe = ThongKeNhapXuatKho({
+                                    tenkienhang: dataPNK.tenkienhang,
+                                    loaikienhang: dataPNK.loaikienhang,
+                                    soluongnhap: dataPNK.soluongkienhang,
+                                    soluongxuat: 0,
+                                    thoigiannhap: created,
+                                    vantocchuyenhang: 0,
+                                    tilechuyenhang: 0
+                                })
+                                await newThongKe.save();
+                            }
+                            else {
+                                const slNhap = parseFloat(foundThongke.soluongnhap, 10) + parseFloat(dataPNK.soluongkienhang, 10)
+                                let tile = parseFloat(foundThongke.soluongxuat, 10) === 0 ? 0 :
+                                    (parseFloat(foundThongke.soluongxuat, 10) / parseFloat(slXuat, 10)) * 100
+                                ThongKeNhapXuatKho.findOneAndUpdate({ _id: foundThongke._id },
+                                    {
+                                        $set: {
+                                            soluongnhap: slNhap,
+                                            tilechuyenhang: tile
+                                        }
+                                    }, async function (err, docs) {
+                                        if (err) {
+                                            return res.status(404).json({ message: "create PNK error" });
+                                        }
+                                    });
+                            }
+
+
                             const foundKHTK = await KienHangTonKho.findOne({
                                 tenkienhang: (dataPNK.tenkienhang).toLowerCase(),
-                                dongia: dataPNK.dongia, khoiluongkienhang: dataPNK.khoiluongkienhang,
+                                dongia: dataPNK.dongia,
+                                //khoiluongkienhang: dataPNK.khoiluongkienhang,
                                 loaikienhang: dataPNK.loaikienhang, khochuakienhang: dataPNK.khochuakienhang
                             });
-
+                            const khoiluong = parseFloat(dataPNK.soluongkienhang, 10) * parseFloat(dataPNK.khoiluongkienhang, 10)
                             if (!foundKHTK) {
                                 const newKienHangTonKho = KienHangTonKho({
                                     tenkienhang: dataPNK.tenkienhang,
                                     soluongkienhang: dataPNK.soluongkienhang,
-                                    khoiluongkienhang: dataPNK.khoiluongkienhang,
+                                    khoiluongkienhang: khoiluong,
                                     dongia: dataPNK.dongia,
                                     loaikienhang: dataPNK.loaikienhang,
                                     khochuakienhang: dataPNK.khochuakienhang,
@@ -63,13 +100,14 @@ module.exports = {
                                 await newKienHangTonKho.save();
                             }
                             else {
+                                const khtkKL = parseFloat(foundKHTK.soluongkienhang, 10) + khoiluong;
                                 const khtkQty = parseFloat(foundKHTK.soluongkienhang, 10) + parseFloat(dataPNK.soluongkienhang, 10);
                                 //const khtkKLKH = parseFloat(foundKHTK.khoiluongkienhang, 10) + parseFloat(dataPNK.khoiluongkienhang, 10);
                                 KienHangTonKho.findOneAndUpdate({ _id: foundKHTK._id },
                                     {
                                         $set: {
                                             soluongkienhang: khtkQty,
-                                            //khoiluongkienhang: khtkKLKH
+                                            khoiluongkienhang: khtkKL
                                         }
                                     }, async function (err, docs) {
                                         if (err) {
@@ -115,17 +153,55 @@ module.exports = {
                         });
                         await newPNKDetail.save();
 
-                        const foundKHTK = await KienHangTonKho.findOne({
+                        const foundThongke = await ThongKeNhapXuatKho.findOne({
                             tenkienhang: (dataPNK.tenkienhang).toLowerCase(),
-                            dongia: dataPNK.dongia, khoiluongkienhang: dataPNK.khoiluongkienhang,
-                            loaikienhang: dataPNK.loaikienhang, khochuakienhang: dataPNK.khochuakienhang
+                            loaikienhang: dataPNK.loaikienhang
                         });
+                        if (!foundThongke) {
+                            const newThongKe = ThongKeNhapXuatKho({
+                                tenkienhang: dataPNK.tenkienhang,
+                                loaikienhang: dataPNK.loaikienhang,
+                                soluongnhap: dataPNK.soluongkienhang,
+                                soluongxuat: 0,
+                                thoigiannhap: created,
+                                vantocchuyenhang: 0,
+                                tilechuyenhang: 0
+                            })
+                            await newThongKe.save();
+                        }
+                        else {
+                            const slNhap = parseFloat(foundThongke.soluongnhap, 10) + parseFloat(dataPNK.soluongkienhang, 10)
+                            let tile = parseFloat(foundThongke.soluongxuat, 10) === 0 ? 0 :
+                                (parseFloat(foundThongke.soluongxuat, 10) / parseFloat(slXuat, 10)) * 100
+                            ThongKeNhapXuatKho.findOneAndUpdate({ _id: foundThongke._id },
+                                {
+                                    $set: {
+                                        soluongnhap: slNhap,
+                                        tilechuyenhang: tile
+                                    }
+                                }, async function (err, docs) {
+                                    if (err) {
+                                        return res.status(404).json({ message: "create PNK error" });
+                                    }
+                                });
+                        }
+
+
+                        const foundKHTK = await KienHangTonKho.findOne({
+                            tenkienhang: (dataPNK.tenkienhang),
+                            dongia: dataPNK.dongia,
+                            //khoiluongkienhang: dataPNK.khoiluongkienhang,
+                            loaikienhang: dataPNK.loaikienhang,
+                            khochuakienhang: dataPNK.khochuakienhang
+                        });
+
+                        const khoiluong = parseFloat(dataPNK.soluongkienhang, 10) * parseFloat(dataPNK.khoiluongkienhang, 10)
 
                         if (!foundKHTK) {
                             const newKienHangTonKho = KienHangTonKho({
                                 tenkienhang: dataPNK.tenkienhang,
                                 soluongkienhang: dataPNK.soluongkienhang,
-                                khoiluongkienhang: dataPNK.khoiluongkienhang,
+                                khoiluongkienhang: khoiluong,
                                 dongia: dataPNK.dongia,
                                 loaikienhang: dataPNK.loaikienhang,
                                 khochuakienhang: dataPNK.khochuakienhang,
@@ -134,13 +210,15 @@ module.exports = {
                             await newKienHangTonKho.save();
                         }
                         else {
+                            const khtkKL = parseFloat(foundKHTK.khoiluongkienhang, 10) + khoiluong;
+
                             const khtkQty = parseFloat(foundKHTK.soluongkienhang, 10) + parseFloat(dataPNK.soluongkienhang, 10);
                             //const khtkKLKH = parseFloat(foundKHTK.khoiluongkienhang, 10) + parseFloat(dataPNK.khoiluongkienhang, 10);
                             await KienHangTonKho.findOneAndUpdate({ _id: foundKHTK._id },
                                 {
                                     $set: {
                                         soluongkienhang: khtkQty,
-                                        //khoiluongkienhang: khtkKLKH
+                                        khoiluongkienhang: khtkKL
                                     }
                                 }, function (err, docs) {
                                     if (err) {
@@ -271,7 +349,7 @@ module.exports = {
 
             const foundKHTK = await KienHangTonKho.findOne({
                 tenkienhang: (dataUpdate.tenkienhang).toLowerCase(),
-                dongia: dataUpdate.dongia, khoiluongkienhang: dataUpdate.khoiluongkienhang,
+                dongia: dataUpdate.dongia, //, khoiluongkienhang: dataUpdate.khoiluongkienhang,
                 loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang
             });
 
@@ -333,19 +411,21 @@ module.exports = {
                             let qtyUpdateKHTK = 0;
                             //co update so luong
 
-                            if (soluongkienhang !== '' && soluongkienhang !== undefined) {
-                                qtyUpdateKHTK = parseFloat(soluongkienhang, 10) - parseFloat(foundPNK.soluongkienhang, 10);
-                            }
+                            // if (soluongkienhang !== '' && soluongkienhang !== undefined) {
+                            //     qtyUpdateKHTK = parseFloat(soluongkienhang, 10) - parseFloat(foundPNK.soluongkienhang, 10);
+                            // }
 
+
+                            qtyUpdateKHTK = parseFloat(soluongkienhangUpdate, 10) - parseFloat(foundPNK.soluongkienhang, 10);
                             const qty = parseFloat(foundKHTK.soluongkienhang, 10) + parseFloat(qtyUpdateKHTK, 10);
-
+                            const kl = qty * parseFloat(khoiluongkienhangUpdate, 10)
 
                             KienHangTonKho.findOneAndUpdate({ _id: foundKHTK._id },
                                 {
                                     $set: {
                                         tenkienhang: tenkienhangUpdate,
                                         soluongkienhang: qty,
-                                        khoiluongkienhang: khoiluongkienhangUpdate,
+                                        khoiluongkienhang: kl,
                                         dongia: new Intl.NumberFormat().format(dongiaChitietUpdate),
                                         loaikienhang: loaikienhangUpdate,
                                         khochuakienhang: khochuakienhangUpdate
@@ -355,6 +435,28 @@ module.exports = {
                                         res.status(404).json({ message: "create PNK error" });
                                     }
                                 });
+
+                            const foundThongke = await ThongKeNhapXuatKho.findOne({
+                                tenkienhang: (tenkienhangUpdate).toLowerCase(),
+                                loaikienhang: loaikienhangUpdate
+                            });
+
+                            if (foundThongke) {
+                                const qtyThongke = parseFloat(foundThongke.soluongnhap, 10) + parseFloat(qtyUpdateKHTK, 10);
+                                let tile = parseFloat(foundThongke.soluongxuat, 10) === 0 ? 0 :
+                                    (parseFloat(foundThongke.soluongxuat, 10) / parseFloat(qtyThongke, 10)) * 100
+                                ThongKeNhapXuatKho.findOneAndUpdate({ _id: foundThongke._id },
+                                    {
+                                        $set: {
+                                            soluongnhap: qtyThongke,
+                                            tilechuyenhang: tile
+                                        }
+                                    }, async function (err, docs) {
+                                        if (err) {
+                                            return res.status(404).json({ message: "create PNK error" });
+                                        }
+                                    });
+                            }
 
                             res.status(200).json({ message: "update PNK success" });
                         }
@@ -379,7 +481,8 @@ module.exports = {
 
             const foundKHTK = await KienHangTonKho.findOne({
                 tenkienhang: (dataUpdate.tenkienhang).toLowerCase(),
-                dongia: dataUpdate.dongia, khoiluongkienhang: dataUpdate.khoiluongkienhang,
+                dongia: dataUpdate.dongia,
+                //khoiluongkienhang: dataUpdate.khoiluongkienhang,
                 loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang
             });
 
@@ -441,12 +544,13 @@ module.exports = {
                             if (parseFloat(foundKHTK.soluongkienhang, 10) > parseFloat(foundPNK.soluongkienhang, 10)) {
                                 //update lai so luong
                                 const qty = parseFloat(foundKHTK.soluongkienhang, 10) - parseFloat(foundPNK.soluongkienhang, 10);
+                                const kl = parseFloat(foundKHTK.khoiluongkienhang, 10) - parseFloat(foundPNK.soluongkienhang, 10) * parseFloat(foundPNK.khoiluongkienhang, 10)
                                 //const qtykl = parseFloat(foundKHTK.khoiluongkienhang, 10) - parseFloat(foundPNK.khoiluongkienhang, 10);
                                 KienHangTonKho.findOneAndUpdate({ _id: foundKHTK._id },
                                     {
                                         $set: {
                                             soluongkienhang: qty,
-                                            //khoiluongkienhang: qtykl
+                                            khoiluongkienhang: kl
                                         }
                                     }, async function (err, docs) {
                                         if (err) {
@@ -458,7 +562,8 @@ module.exports = {
                             else {
                                 KienHangTonKho.findOneAndDelete({
                                     tenkienhang: (dataUpdate.tenkienhang).toLowerCase(),
-                                    dongia: dataUpdate.dongia, khoiluongkienhang: dataUpdate.khoiluongkienhang,
+                                    dongia: dataUpdate.dongia,
+                                    //khoiluongkienhang: dataUpdate.khoiluongkienhang,
                                     loaikienhang: dataUpdate.loaikienhang, khochuakienhang: dataUpdate.khochuakienhang
                                 }, async function (err, docs) {
                                     if (err) {
@@ -466,6 +571,40 @@ module.exports = {
                                     }
                                 });
                             }
+                        }
+                        const foundThongke = await ThongKeNhapXuatKho.findOne({
+                            tenkienhang: (foundPNK.tenkienhang).toLowerCase(),
+                            loaikienhang: foundPNK.loaikienhang
+                        });
+
+                        if (foundThongke) {
+                            if (parseFloat(foundThongke.soluongnhap, 10) > parseFloat(foundPNK.soluongkienhang, 10)) {
+                                const qtyThongke = parseFloat(foundThongke.soluongnhap, 10) - parseFloat(foundPNK.soluongkienhang, 10)
+                                let tile = parseFloat(foundThongke.soluongxuat, 10) === 0 ? 0 :
+                                    (parseFloat(foundThongke.soluongxuat, 10) / parseFloat(qtyThongke, 10)) * 100
+                                ThongKeNhapXuatKho.findOneAndUpdate({ _id: foundThongke._id },
+                                    {
+                                        $set: {
+                                            soluongnhap: qtyThongke,
+                                            tilechuyenhang: tile
+                                        }
+                                    }, async function (err, docs) {
+                                        if (err) {
+                                            return res.status(404).json({ message: "create PNK error" });
+                                        }
+                                    });
+                            }
+                            else {
+                                ThongKeNhapXuatKho.findOneAndDelete({
+                                    tenkienhang: (foundPNK.tenkienhang).toLowerCase(),
+                                    loaikienhang: foundPNK.loaikienhang
+                                }, async function (err, docs) {
+                                    if (err) {
+                                        res.status(404).json({ message: "update PNK error" });
+                                    }
+                                });
+                            }
+
                         }
                         res.status(200).json({ message: "update PNK success" });
                     }
@@ -481,10 +620,10 @@ module.exports = {
         const { emailuser } = req.body;
         try {
             //const khtk = await KienHangTonKho.findOne({ khochuakienhang });
-            if(emailuser){
-                const fountUser   = await User.findOne({ email: emailuser });
+            if (emailuser) {
+                const fountUser = await User.findOne({ email: emailuser });
                 KienHangTonKho.find({ khochuakienhang: fountUser.kholamviec }).then((khtk) => {
-    
+
                     res.json({
                         result: 'ok',
                         data: khtk,
