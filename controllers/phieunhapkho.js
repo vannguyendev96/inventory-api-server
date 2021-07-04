@@ -10,10 +10,12 @@ const User = require('../models/user');
 module.exports = {
     createPNK: async (req, res, next) => {
         try {
-            const { data, driver, dongiacuoc, quangduongdichuyen } = req.body;
+            const { data, driver, dongiacuoc, quangduongdichuyen, ngaynhapkho } = req.body;
 
-            let today = new Date();
-            let created = (today.getMonth() + 1) + '-' + (today.getDate()) + '-' + today.getFullYear();
+            let today = new Date(ngaynhapkho);
+            const monthCreate = (parseFloat((today.getMonth() + 1), 10) > 10) ? (today.getMonth() + 1) : ("0" + (today.getMonth() + 1));
+            const dayCreate = (parseFloat((today.getDate() + 1), 10) > 10) ? (today.getDate() + 1) : ("0" + (today.getDate() + 1));
+            let created = monthCreate + '-' + dayCreate + '-' + today.getFullYear();
 
             let tongtienlohang = 0;
 
@@ -51,12 +53,15 @@ module.exports = {
                                 loaikienhang: dataPNK.loaikienhang
                             });
                             if (!foundThongke) {
+                                const monthCreate1 = (parseFloat((today.getMonth() + 1), 10) > 10) ? (today.getMonth() + 1) : ("0" + (today.getMonth() + 1));
+                                const dayCreate1 = (parseFloat((today.getDate()), 10) > 10) ? (today.getDate()) : ("0" + (today.getDate()));
+                                let created1 = monthCreate1 + '-' + dayCreate1 + '-' + today.getFullYear();
                                 const newThongKe = ThongKeNhapXuatKho({
                                     tenkienhang: dataPNK.tenkienhang,
                                     loaikienhang: dataPNK.loaikienhang,
                                     soluongnhap: dataPNK.soluongkienhang,
                                     soluongxuat: 0,
-                                    thoigiannhap: created,
+                                    thoigiannhap: created1,
                                     vantocchuyenhang: 0,
                                     tilechuyenhang: 0
                                 })

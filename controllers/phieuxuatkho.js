@@ -4,14 +4,21 @@ const PhieuXuatKhoChiTiet = require('../models/phieuxuatkhochitiet');
 const KienHangTonKho = require('../models/kienhangtonkho');
 const ThongKeNhapXuatKho = require('../models/thongkenhapxuat');
 
+function getDifferenceInDays(date1, date2) {
+    const diffInMs = Math.abs(date2 - date1);
+    return diffInMs / (1000 * 60 * 60 * 24);
+}
+
 module.exports = {
     createPNK: async (req, res, next) => {
         try {
             const { data, lydoxuatkho, sotienthanhtoan, phuongthucthanhtoan, taixevanchuyen,
-                dongiacuoc, quangduongdichuyen } = req.body;
+                dongiacuoc, quangduongdichuyen, ngayxuatkho } = req.body;
 
-            let today = new Date();
-            let created = (today.getMonth() + 1) + '-' + (today.getDate()) + '-' + today.getFullYear();
+            let today = new Date(ngayxuatkho);
+            const monthCreate = (parseFloat((today.getMonth() + 1), 10) > 10) ? (today.getMonth() + 1) : ("0" + (today.getMonth() + 1));
+            const dayCreate = (parseFloat((today.getDate() + 1), 10) > 10) ? (today.getDate() + 1) : ("0" + (today.getDate() + 1));
+            let created = monthCreate + '-' + dayCreate + '-' + today.getFullYear();
 
             //const tongConvert = (sotienthanhtoan).split(",").join("");
             const tongtienXuatKho = parseFloat(sotienthanhtoan, 10) + (parseFloat(dongiacuoc, 10) * quangduongdichuyen);
@@ -45,16 +52,21 @@ module.exports = {
                                     loaikienhang: data[i].loaikienhang
                                 });
                                 if (foundThongke) {
+                                    const monthCreate1 = (parseFloat((today.getMonth() + 1), 10) > 10) ? (today.getMonth() + 1) : ("0" + (today.getMonth() + 1));
+                                    const dayCreate1 = (parseFloat((today.getDate()), 10) > 10) ? (today.getDate()) : ("0" + (today.getDate()));
+                                    let created1 = monthCreate1 + '-' + dayCreate1 + '-' + today.getFullYear();
                                     const slXuat = parseFloat(foundThongke.soluongxuat, 10) === 0 ? parseFloat(data[i].soluongkienhang, 10) :
                                         parseFloat(foundThongke.soluongxuat, 10) + parseFloat(data[i].soluongkienhang, 10)
                                     let tile = (slXuat / parseFloat(foundThongke.soluongnhap, 10)) * 100;
+                                    let vantoc = slXuat / (getDifferenceInDays(new Date(created1), new Date(foundThongke.thoigiannhap) ))
 
                                     ThongKeNhapXuatKho.findOneAndUpdate({ _id: foundThongke._id },
                                         {
                                             $set: {
                                                 soluongxuat: slXuat,
                                                 tilechuyenhang: tile,
-                                                thoigianxuat: created
+                                                thoigianxuat: created1,
+                                                vantocchuyenhang: vantoc
                                             }
                                         }, async function (err, docs) {
                                             if (err) {
@@ -582,7 +594,7 @@ module.exports = {
                         if (foundThongke) {
                             const qtyThongke = parseFloat(foundThongke.soluongxuat, 10) - parseFloat(foundPXK.soluongkienhang, 10)
                             let tile = parseFloat(foundThongke.soluongxuat, 10) === 0 ? 0 :
-                                (qtyThongke/ parseFloat(foundThongke.soluongnhap, 10)) * 100
+                                (qtyThongke / parseFloat(foundThongke.soluongnhap, 10)) * 100
                             ThongKeNhapXuatKho.findOneAndUpdate({ _id: foundThongke._id },
                                 {
                                     $set: {
