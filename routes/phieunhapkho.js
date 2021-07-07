@@ -29,4 +29,7 @@ router.route('/get-khtk')
 router.route('/getdetail-khtk')
     .post(passportJWT, PhieuNhapKhoController.getDetailKHTKByID);
 
+router.route('/check-create')
+    .post(passportJWT, PhieuNhapKhoController.checkcreate);
+
 module.exports = router;

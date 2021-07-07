@@ -130,9 +130,13 @@ module.exports = {
             }
             else {
 
+
+
                 const pnk = await PhieuNhapKho.find().sort({ malohang: -1 });
                 const malohangCheck = (parseInt(pnk[0].malohang) + 1).toString();
                 const foundPNK = await PhieuNhapKho.findOne({ malohang: malohangCheck });
+
+
 
                 if (foundPNK) {
                     return res.status(403).json({ message: "ID PNK is a already in use" });
@@ -447,9 +451,12 @@ module.exports = {
                             });
 
                             if (foundThongke) {
+                                console.log("co");
                                 const qtyThongke = parseFloat(foundThongke.soluongnhap, 10) + parseFloat(qtyUpdateKHTK, 10);
                                 let tile = parseFloat(foundThongke.soluongxuat, 10) === 0 ? 0 :
                                     (parseFloat(foundThongke.soluongxuat, 10) / parseFloat(qtyThongke, 10)) * 100
+                                console.log("qtyThongke", qtyThongke);
+                                console.log("tile", tile);
                                 ThongKeNhapXuatKho.findOneAndUpdate({ _id: foundThongke._id },
                                     {
                                         $set: {
@@ -647,12 +654,27 @@ module.exports = {
         const { id } = req.body;
         try {
             KienHangTonKho.find({ _id: id }).then((khtk) => {
+                console.log(khtk);
                 res.json({
                     result: 'ok',
                     data: khtk,
                     message: 'get KHTKDetail successfully'
                 })
             })
+        } catch (error) {
+            console.log(error);
+            res.status(400).json({ message: "get KHTKDetail error" });
+        }
+    },
+
+    checkcreate: async (req, res, next) => {
+        const { tenkienhang } = req.body;
+        try {
+            const foundPNKChiTietCheck = await PhieuNhapKhoChiTiet.findOne({ tenkienhang: tenkienhang });
+            if (foundPNKChiTietCheck) {
+                return res.status(403).json({ message: `Kiện hàng ${tenkienhang} đã tồn tại` });
+            }
+            res.status(200).json({ message: "success" });
         } catch (error) {
             console.log(error);
             res.status(400).json({ message: "get KHTKDetail error" });

@@ -14,7 +14,8 @@ const phieunhapkhochitietSchema = new Schema({
 
     tenkienhang: {
         type: String,
-        require: true
+        require: true,
+        lowercase: true
     },
 
     soluongkienhang: {

@@ -3,9 +3,11 @@ const PhieuNhapKho = require('../models/phieunhapkho');
 const PhieuXuatKhoChiTiet = require('../models/phieuxuatkhochitiet');
 const KienHangTonKho = require('../models/kienhangtonkho');
 const ThongKeNhapXuatKho = require('../models/thongkenhapxuat');
+const PhieuNhapKhoChiTiet = require('../models/phieunhapkhochitiet');
 
 function getDifferenceInDays(date1, date2) {
-    const diffInMs = Math.abs(date2 - date1);
+    console.log();
+    const diffInMs = date2 - date1;
     return diffInMs / (1000 * 60 * 60 * 24);
 }
 
@@ -25,6 +27,18 @@ module.exports = {
 
             PhieuXuatKho.find().then(async (check) => {
                 if (check.length === 0) {
+                    for (let i = 0; i < data.length; i++) {
+                        const foundPXKCheck = await PhieuNhapKhoChiTiet.findOne({ tenkienhang: data[i].tenkienhang.toLowerCase() });
+                        const foundPXK = await PhieuNhapKho.findOne({ malohang: foundPXKCheck.malohang });
+                        if (foundPXK) {
+                            let today1 = new Date(foundPXK.ngaytaolohang);
+                            const monthCreate1 = (parseFloat((today1.getMonth() + 1), 10) > 10) ? (today1.getMonth() + 1) : ("0" + (today1.getMonth() + 1));
+                            const dayCreate1 = (parseFloat((today1.getDate()), 10) > 10) ? (today1.getDate() -1) : ("0" + (today1.getDate() -1));
+                            let created1 = monthCreate1 + '-' + dayCreate1 + '-' + today1.getFullYear();
+                            if ((getDifferenceInDays(new Date(created1), new Date(created))) < 0)
+                                return res.status(403).json({ message: `Ngay xuat kho phai lon hon ngay nhap kho (${created1})` });
+                        }
+                    }
                     const newPXK = PhieuXuatKho({
                         malohang: "1000", nguoitaolohang: data[0].nguoitaolohang, ngaytaolohang: created, lydoxuatkho,
                         sotienthanhtoan: new Intl.NumberFormat().format(tongtienXuatKho), phuongthucthanhtoan,
@@ -52,13 +66,21 @@ module.exports = {
                                     loaikienhang: data[i].loaikienhang
                                 });
                                 if (foundThongke) {
-                                    const monthCreate1 = (parseFloat((today.getMonth() + 1), 10) > 10) ? (today.getMonth() + 1) : ("0" + (today.getMonth() + 1));
-                                    const dayCreate1 = (parseFloat((today.getDate()), 10) > 10) ? (today.getDate()) : ("0" + (today.getDate()));
-                                    let created1 = monthCreate1 + '-' + dayCreate1 + '-' + today.getFullYear();
+
                                     const slXuat = parseFloat(foundThongke.soluongxuat, 10) === 0 ? parseFloat(data[i].soluongkienhang, 10) :
                                         parseFloat(foundThongke.soluongxuat, 10) + parseFloat(data[i].soluongkienhang, 10)
                                     let tile = (slXuat / parseFloat(foundThongke.soluongnhap, 10)) * 100;
-                                    let vantoc = slXuat / (getDifferenceInDays(new Date(created1), new Date(foundThongke.thoigiannhap) ))
+
+                                    const monthCreate1 = (parseFloat((today.getMonth() + 1), 10) > 10) ? (today.getMonth() + 1) : ("0" + (today.getMonth() + 1));
+                                    const dayCreate1 = (parseFloat((today.getDate()), 10) > 10) ? (today.getDate()) : ("0" + (today.getDate()));
+                                    let created1 = monthCreate1 + '-' + dayCreate1 + '-' + today.getFullYear();
+                                    let vantoc = 0
+                                    if ((getDifferenceInDays(new Date(created1), new Date(foundThongke.thoigiannhap))) === 0) {
+                                        vantoc = 100;
+                                    }
+                                    else {
+                                        vantoc = slXuat / (getDifferenceInDays(new Date(created1), new Date(foundThongke.thoigiannhap)))
+                                    }
 
                                     ThongKeNhapXuatKho.findOneAndUpdate({ _id: foundThongke._id },
                                         {
@@ -66,7 +88,7 @@ module.exports = {
                                                 soluongxuat: slXuat,
                                                 tilechuyenhang: tile,
                                                 thoigianxuat: created1,
-                                                vantocchuyenhang: vantoc
+                                                vantocchuyenhang: Math.abs(vantoc) 
                                             }
                                         }, async function (err, docs) {
                                             if (err) {
@@ -123,6 +145,18 @@ module.exports = {
                         });
                 }
                 else {
+                    for (let i = 0; i < data.length; i++) {
+                        const foundPXKCheck = await PhieuNhapKhoChiTiet.findOne({ tenkienhang: data[i].tenkienhang.toLowerCase() });
+                        const foundPXK = await PhieuNhapKho.findOne({ malohang: foundPXKCheck.malohang });
+                        if (foundPXK) {
+                            let today1 = new Date(foundPXK.ngaytaolohang);
+                            const monthCreate1 = (parseFloat((today1.getMonth() + 1), 10) > 10) ? (today1.getMonth() + 1) : ("0" + (today1.getMonth() + 1));
+                            const dayCreate1 = (parseFloat((today1.getDate()), 10) > 10) ? (today1.getDate() -1) : ("0" + (today1.getDate() -1));
+                            let created1 = monthCreate1 + '-' + dayCreate1 + '-' + today1.getFullYear();
+                            if ((getDifferenceInDays(new Date(created1), new Date(created))) < 0)
+                                return res.status(403).json({ message: `Ngay xuat kho phai lon hon ngay nhap kho (${created1})` });
+                        }
+                    }
                     PhieuXuatKho.find().sort({ malohang: -1 }).then(async (pxk) => {
                         const malohangCheck = (parseInt(pxk[0].malohang) + 1).toString();
                         const foundPXK = await PhieuXuatKho.findOne({ malohang: malohangCheck });
@@ -161,11 +195,25 @@ module.exports = {
                                                 parseFloat(foundThongke.soluongxuat, 10) + parseFloat(data[i].soluongkienhang, 10)
                                             let tile = (slXuat / parseFloat(foundThongke.soluongnhap, 10)) * 100;
 
+                                            const monthCreate1 = (parseFloat((today.getMonth() + 1), 10) > 10) ? (today.getMonth() + 1) : ("0" + (today.getMonth() + 1));
+                                            const dayCreate1 = (parseFloat((today.getDate()), 10) > 10) ? (today.getDate()) : ("0" + (today.getDate()));
+                                            let created1 = monthCreate1 + '-' + dayCreate1 + '-' + today.getFullYear();
+
+                                            let vantoc = 0
+                                            if ((getDifferenceInDays(new Date(created1), new Date(foundThongke.thoigiannhap))) === 0) {
+                                                vantoc = 100;
+                                            }
+                                            else {
+                                                vantoc = slXuat / (getDifferenceInDays(new Date(created1), new Date(foundThongke.thoigiannhap)))
+                                            }
+
+
                                             ThongKeNhapXuatKho.findOneAndUpdate({ _id: foundThongke._id },
                                                 {
                                                     $set: {
                                                         soluongxuat: slXuat,
-                                                        tilechuyenhang: tile
+                                                        tilechuyenhang: tile,
+                                                        vantocchuyenhang: Math.abs(vantoc) 
                                                     }
                                                 }, async function (err, docs) {
                                                     if (err) {
@@ -595,11 +643,20 @@ module.exports = {
                             const qtyThongke = parseFloat(foundThongke.soluongxuat, 10) - parseFloat(foundPXK.soluongkienhang, 10)
                             let tile = parseFloat(foundThongke.soluongxuat, 10) === 0 ? 0 :
                                 (qtyThongke / parseFloat(foundThongke.soluongnhap, 10)) * 100
+
+                            let vantoc = 0
+                            if ((getDifferenceInDays(new Date(foundThongke.thoigianxuat), new Date(foundThongke.thoigiannhap))) === 0) {
+                                vantoc = 100;
+                            }
+                            else {
+                                vantoc = qtyThongke / (getDifferenceInDays(new Date(foundThongke.thoigianxuat), new Date(foundThongke.thoigiannhap)))
+                            }
                             ThongKeNhapXuatKho.findOneAndUpdate({ _id: foundThongke._id },
                                 {
                                     $set: {
                                         soluongxuat: qtyThongke,
-                                        tilechuyenhang: tile
+                                        tilechuyenhang: tile,
+                                        vantocchuyenhang: Math.abs(vantoc) 
                                     }
                                 }, async function (err, docs) {
                                     if (err) {
