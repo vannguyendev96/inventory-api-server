@@ -18,9 +18,12 @@ module.exports = {
                 dongiacuoc, quangduongdichuyen, ngayxuatkho } = req.body;
 
             let today = new Date(ngayxuatkho);
-            const monthCreate = (parseFloat((today.getMonth() + 1), 10) > 10) ? (today.getMonth() + 1) : ("0" + (today.getMonth() + 1));
-            const dayCreate = (parseFloat((today.getDate() + 1), 10) > 10) ? (today.getDate() + 1) : ("0" + (today.getDate() + 1));
+            const monthCreate = (parseFloat((today.getMonth() + 1), 10) > 9) ? (today.getMonth() + 1) : ("0" + (today.getMonth() + 1));
+            const dayCreate = (parseFloat((today.getDate()), 10) > 9) ? (today.getDate()) : ("0" + (today.getDate()));
             let created = monthCreate + '-' + dayCreate + '-' + today.getFullYear();
+
+            const dayCreate2 = (parseFloat((today.getDate() +1), 10) > 9) ? (today.getDate() + 1) : ("0" + (today.getDate() +1));
+            let created2 = monthCreate + '-' + dayCreate2 + '-' + today.getFullYear();
 
             //const tongConvert = (sotienthanhtoan).split(",").join("");
             const tongtienXuatKho = parseFloat(sotienthanhtoan, 10) + (parseFloat(dongiacuoc, 10) * quangduongdichuyen);
@@ -32,15 +35,17 @@ module.exports = {
                         const foundPXK = await PhieuNhapKho.findOne({ malohang: foundPXKCheck.malohang });
                         if (foundPXK) {
                             let today1 = new Date(foundPXK.ngaytaolohang);
-                            const monthCreate1 = (parseFloat((today1.getMonth() + 1), 10) > 10) ? (today1.getMonth() + 1) : ("0" + (today1.getMonth() + 1));
-                            const dayCreate1 = (parseFloat((today1.getDate()), 10) > 10) ? (today1.getDate() - 1) : ("0" + (today1.getDate() - 1));
+                            const monthCreate1 = (parseFloat((today1.getMonth() + 1), 10) > 9) ? (today1.getMonth() + 1) : ("0" + (today1.getMonth() + 1));
+                            const dayCreate1 = (parseFloat((today1.getDate()), 10) > 9) ? (today1.getDate()) : ("0" + (today1.getDate()));
                             let created1 = monthCreate1 + '-' + dayCreate1 + '-' + today1.getFullYear();
+                            console.log("created1created1", created1);
                             if ((getDifferenceInDays(new Date(created1), new Date(created))) < 0)
                                 return res.status(403).json({ message: `Ngay xuat kho phai lon hon ngay nhap kho (${created1})` });
                         }
                     }
                     const newPXK = PhieuXuatKho({
-                        malohang: "1000", nguoitaolohang: data[0].nguoitaolohang, ngaytaolohang: created, lydoxuatkho,
+                        malohang: "1000", nguoitaolohang: data[0].nguoitaolohang, 
+                        ngaytaolohang: created2, lydoxuatkho,
                         sotienthanhtoan: new Intl.NumberFormat().format(tongtienXuatKho), phuongthucthanhtoan,
                         //sotienthanhtoan: tongtienXuatKho, phuongthucthanhtoan, 
                         taixevanchuyen, dongiacuoc, quangduongdichuyen
@@ -71,15 +76,15 @@ module.exports = {
                                         parseFloat(foundThongke.soluongxuat, 10) + parseFloat(data[i].soluongkienhang, 10)
                                     let tile = (slXuat / parseFloat(foundThongke.soluongnhap, 10)) * 100;
 
-                                    const monthCreate1 = (parseFloat((today.getMonth() + 1), 10) > 10) ? (today.getMonth() + 1) : ("0" + (today.getMonth() + 1));
-                                    const dayCreate1 = (parseFloat((today.getDate()), 10) > 10) ? (today.getDate()) : ("0" + (today.getDate()));
+                                    const monthCreate1 = (parseFloat((today.getMonth() + 1), 9) > 10) ? (today.getMonth() + 1) : ("0" + (today.getMonth() + 1));
+                                    const dayCreate1 = (parseFloat((today.getDate()), 10) > 9) ? (today.getDate()) : ("0" + (today.getDate()));
                                     let created1 = monthCreate1 + '-' + dayCreate1 + '-' + today.getFullYear();
                                     let vantoc = 0
-                                    if ((getDifferenceInDays(new Date(created1), new Date(foundThongke.thoigiannhap))) === 0) {
+                                    if ((getDifferenceInDays(new Date(created), new Date(foundThongke.thoigiannhap))) === 0) {
                                         vantoc = 100;
                                     }
                                     else {
-                                        vantoc = slXuat / (getDifferenceInDays(new Date(created1), new Date(foundThongke.thoigiannhap)))
+                                        vantoc = slXuat / (getDifferenceInDays(new Date(created), new Date(foundThongke.thoigiannhap)))
                                     }
 
                                     ThongKeNhapXuatKho.findOneAndUpdate({ _id: foundThongke._id },
@@ -87,7 +92,7 @@ module.exports = {
                                             $set: {
                                                 soluongxuat: slXuat,
                                                 tilechuyenhang: tile,
-                                                thoigianxuat: created1,
+                                                thoigianxuat: created,
                                                 vantocchuyenhang: Math.abs(vantoc)
                                             }
                                         }, async function (err, docs) {
@@ -150,9 +155,10 @@ module.exports = {
                         const foundPXK = await PhieuNhapKho.findOne({ malohang: foundPXKCheck.malohang });
                         if (foundPXK) {
                             let today1 = new Date(foundPXK.ngaytaolohang);
-                            const monthCreate1 = (parseFloat((today1.getMonth() + 1), 10) > 10) ? (today1.getMonth() + 1) : ("0" + (today1.getMonth() + 1));
-                            const dayCreate1 = (parseFloat((today1.getDate()), 10) > 10) ? (today1.getDate() - 1) : ("0" + (today1.getDate() - 1));
+                            const monthCreate1 = (parseFloat((today1.getMonth() + 1), 10) > 9) ? (today1.getMonth() + 1) : ("0" + (today1.getMonth() + 1));
+                            const dayCreate1 = (parseFloat((today1.getDate()), 10) > 9) ? (today1.getDate()) : ("0" + (today1.getDate()));
                             let created1 = monthCreate1 + '-' + dayCreate1 + '-' + today1.getFullYear();
+                            console.log("created1created1", created1);
                             if ((getDifferenceInDays(new Date(created1), new Date(created))) < 0)
                                 return res.status(403).json({ message: `Ngay xuat kho phai lon hon ngay nhap kho (${created1})` });
                         }
@@ -166,7 +172,7 @@ module.exports = {
                         else {
                             const newPXK = PhieuXuatKho({
                                 malohang: malohangCheck, nguoitaolohang: data[0].nguoitaolohang,
-                                ngaytaolohang: created, lydoxuatkho,
+                                ngaytaolohang: created2, lydoxuatkho,
                                 sotienthanhtoan: new Intl.NumberFormat().format(tongtienXuatKho),
                                 //sotienthanhtoan: tongtienXuatKho,
                                 phuongthucthanhtoan, taixevanchuyen, dongiacuoc, quangduongdichuyen
@@ -194,17 +200,12 @@ module.exports = {
                                             const slXuat = parseFloat(foundThongke.soluongxuat, 10) === 0 ? parseFloat(data[i].soluongkienhang, 10) :
                                                 parseFloat(foundThongke.soluongxuat, 10) + parseFloat(data[i].soluongkienhang, 10)
                                             let tile = (slXuat / parseFloat(foundThongke.soluongnhap, 10)) * 100;
-
-                                            const monthCreate1 = (parseFloat((today.getMonth() + 1), 10) > 10) ? (today.getMonth() + 1) : ("0" + (today.getMonth() + 1));
-                                            const dayCreate1 = (parseFloat((today.getDate()), 10) > 10) ? (today.getDate()) : ("0" + (today.getDate()));
-                                            let created1 = monthCreate1 + '-' + dayCreate1 + '-' + today.getFullYear();
-
                                             let vantoc = 0
-                                            if ((getDifferenceInDays(new Date(created1), new Date(foundThongke.thoigiannhap))) === 0) {
+                                            if ((getDifferenceInDays(new Date(created), new Date(foundThongke.thoigiannhap))) === 0) {
                                                 vantoc = 100;
                                             }
                                             else {
-                                                vantoc = slXuat / (getDifferenceInDays(new Date(created1), new Date(foundThongke.thoigiannhap)))
+                                                vantoc = slXuat / (getDifferenceInDays(new Date(created), new Date(foundThongke.thoigiannhap)))
                                             }
 
 
@@ -213,7 +214,7 @@ module.exports = {
                                                     $set: {
                                                         soluongxuat: slXuat,
                                                         tilechuyenhang: tile,
-                                                        thoigianxuat: created1,
+                                                        thoigianxuat: created,
                                                         vantocchuyenhang: Math.abs(vantoc)
                                                     }
                                                 }, async function (err, docs) {
