@@ -54,7 +54,7 @@ module.exports = {
                             });
                             if (!foundThongke) {
                                 const monthCreate1 = (parseFloat((today.getMonth() + 1), 10) > 9) ? (today.getMonth() + 1) : ("0" + (today.getMonth() + 1));
-                                const dayCreate1 = (parseFloat((today.getDate()), 10) > 9) ? (today.getDate() -1) : ("0" + (today.getDate() -1));
+                                const dayCreate1 = (parseFloat((today.getDate()), 10) > 9) ? (today.getDate() - 1) : ("0" + (today.getDate() - 1));
                                 let created1 = monthCreate1 + '-' + dayCreate1 + '-' + today.getFullYear();
                                 const newThongKe = ThongKeNhapXuatKho({
                                     tenkienhang: dataPNK.tenkienhang,
@@ -312,8 +312,11 @@ module.exports = {
                 })
             }
             else if (queryString === "ngaytaolohang") {
-
-                PhieuNhapKho.find({ ngaytaolohang: { $gte: dataQuery.date_from, $lte: dataQuery.date_to } }).sort([['time', -1]]).then((pnkchitiet) => {
+                let today = new Date(dataQuery.date_from);
+                const monthCreate = (parseFloat((today.getMonth() + 1), 10) > 9) ? (today.getMonth() + 1) : ("0" + (today.getMonth() + 1));
+                const dayCreate = (parseFloat((today.getDate() - 1), 10) > 9) ? (today.getDate() - 1) : ("0" + (today.getDate() - 1));
+                let created = today.getFullYear() + '-' + monthCreate + '-' + dayCreate;
+                PhieuNhapKho.find({ ngaytaolohang: { $gte: created, $lte: dataQuery.date_to } }).sort([['time', -1]]).then((pnkchitiet) => {
                     res.json({
                         result: 'ok',
                         data: pnkchitiet,

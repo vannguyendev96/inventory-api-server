@@ -22,7 +22,7 @@ module.exports = {
             const dayCreate = (parseFloat((today.getDate()), 10) > 9) ? (today.getDate()) : ("0" + (today.getDate()));
             let created = monthCreate + '-' + dayCreate + '-' + today.getFullYear();
 
-            const dayCreate2 = (parseFloat((today.getDate() +1), 10) > 9) ? (today.getDate() + 1) : ("0" + (today.getDate() +1));
+            const dayCreate2 = (parseFloat((today.getDate() + 1), 10) > 9) ? (today.getDate() + 1) : ("0" + (today.getDate() + 1));
             let created2 = monthCreate + '-' + dayCreate2 + '-' + today.getFullYear();
 
             //const tongConvert = (sotienthanhtoan).split(",").join("");
@@ -44,7 +44,7 @@ module.exports = {
                         }
                     }
                     const newPXK = PhieuXuatKho({
-                        malohang: "1000", nguoitaolohang: data[0].nguoitaolohang, 
+                        malohang: "1000", nguoitaolohang: data[0].nguoitaolohang,
                         ngaytaolohang: created2, lydoxuatkho,
                         sotienthanhtoan: new Intl.NumberFormat().format(tongtienXuatKho), phuongthucthanhtoan,
                         //sotienthanhtoan: tongtienXuatKho, phuongthucthanhtoan, 
@@ -346,8 +346,11 @@ module.exports = {
                 })
             }
             else if (queryString === "ngaytaolohang") {
-
-                PhieuXuatKho.find({ ngaytaolohang: { $gte: dataQuery.date_from, $lte: dataQuery.date_to } }).sort([['time', -1]]).then((pnkchitiet) => {
+                let today = new Date(dataQuery.date_from);
+                const monthCreate = (parseFloat((today.getMonth() + 1), 10) > 9) ? (today.getMonth() + 1) : ("0" + (today.getMonth() + 1));
+                const dayCreate = (parseFloat((today.getDate() -1), 10) > 9) ? (today.getDate() -1) : ("0" + (today.getDate() -1));
+                let created = today.getFullYear() + '-' + monthCreate + '-' + dayCreate;
+                PhieuXuatKho.find({ ngaytaolohang: { $gte: new Date(created), $lte: new Date(dataQuery.date_to) } }).sort([['time', -1]]).then((pnkchitiet) => {
                     res.json({
                         result: 'ok',
                         data: pnkchitiet,
