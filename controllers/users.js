@@ -69,7 +69,8 @@ module.exports = {
         const expiredRefreshToken = new Date().setDate(new Date().getDate() + 3650);
         const refreshToken = signToken(req.user, expiredRefreshToken);
 
-        res.status(200).json({ roll: req.user.roll, token: token, refreshToken: refreshToken });
+        res.status(200).json({ roll: req.user.roll, token: token, refreshToken: refreshToken,
+            kholamviec: req.user.kholamviec });
     },
 
     secret: async (req, res, next) => {

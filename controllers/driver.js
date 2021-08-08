@@ -17,7 +17,7 @@ async function checkSDT(sdt) {
 module.exports = {
     createInfoDriver: async (req,res,next) =>{
         try {
-            const { cmnd, tentx,trangthai, sdt, namsinh, provine,district, phuong } = req.body;
+            const { cmnd, tentx,trangthai, sdt, namsinh, provine,district, phuong, kholamviec } = req.body;
 
             const check = await checkSDT(sdt);
             if(check){
@@ -28,7 +28,7 @@ module.exports = {
                 res.status(403).json({ message: "Driver info is a already in use" });
             }
             else{
-                const newDriver = Driver({ cmnd, tentx,trangthai, sdt, namsinh, provine,district, phuong });
+                const newDriver = Driver({ cmnd, tentx,trangthai, sdt, namsinh, provine,district, phuong, kholamviec });
                 await newDriver.save();
                 res.status(200).json({ message: "create info driver success" });
             }
@@ -41,6 +41,23 @@ module.exports = {
     getListDriver: async (req, res, next) => {
         try {
             Driver.find().then((driver) => {
+                res.json({
+                    result: 'ok',
+                    data: driver,
+                    length: driver.length,
+                    message: 'get driver successfully'
+                })
+            })
+        } catch (error) {
+            console.log(error);
+            res.status(400).json({ message: "get info driver error" });
+        }
+    },
+
+    getListDriverByID: async (req, res, next) => {
+        const { kholamviec } = req.body;
+        try {
+            Driver.find({ kholamviec: kholamviec}).then((driver) => {
                 res.json({
                     result: 'ok',
                     data: driver,

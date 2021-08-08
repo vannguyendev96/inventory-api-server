@@ -32,6 +32,11 @@ const driverSchema = new Schema({
         lowercase: true
     },
 
+    kholamviec: {
+        type: String,
+        lowercase: true
+    },
+
     provine: {
         type: String,
         require: true,

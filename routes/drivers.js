@@ -11,6 +11,9 @@ router.route('/createinfodriver')
 router.route('/getlist-driver')
   .get(passportJWT, DriversController.getListDriver);
 
+router.route('/getlist-driver-byid')
+  .post(passportJWT, DriversController.getListDriverByID);
+
 router.route('/delete-driver')
   .post(passportJWT, DriversController.deleteDriver);
 
